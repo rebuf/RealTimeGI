@@ -1,0 +1,372 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{bfd5b84d-ffb6-4652-b2e5-7d45dede6775}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{c461b589-3abe-4064-b159-31f5ecfc6754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\UI">
+      <UniqueIdentifier>{01664935-d9d7-44db-bc92-7a16a23a459a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\UI\ImGUI">
+      <UniqueIdentifier>{fa3cc766-d392-4979-8895-bceb21f34247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render">
+      <UniqueIdentifier>{397492f0-6a9c-4c11-a9df-1221e51a0c17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Importers">
+      <UniqueIdentifier>{c08076d9-b20b-4123-a054-38408de81e89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene">
+      <UniqueIdentifier>{2227416b-657a-42e0-b1a3-8c39444ea967}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\VKInterface">
+      <UniqueIdentifier>{0909d5b2-e18a-4558-be44-a70c59f2e6da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\RenderData">
+      <UniqueIdentifier>{ead15029-9e87-40b2-b996-56e737170852}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\RenderData\Primitives">
+      <UniqueIdentifier>{4a6b26c8-c01e-409a-97c4-066f46e33833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\RenderData\Shaders">
+      <UniqueIdentifier>{d12f9a87-b7ad-4d56-8008-1581a7f038cf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Core\Core.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Frustum.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Box.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Image2D.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Application.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AppWindow.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AppUser.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\CoreTypes.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imgui_impl_glfw.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imgui_impl_vulkan.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imgui_internal.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imstb_rectpack.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imstb_textedit.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imstb_truetype.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imconfig.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\UI\ImGUI\imgui.h">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Mesh.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Importers\OBJImporter.h">
+      <Filter>Source Files\Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Importers\GLTFImporter.h">
+      <Filter>Source Files\Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Node.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Scene.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\MeshNode.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\Renderer.h">
+      <Filter>Source Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIInstance.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Delegate.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKITypes.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIDevice.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKICommandBuffer.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKISwapChain.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIFramebuffer.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIRenderPass.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\RenderLight.h">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Primitives\RenderMesh.h">
+      <Filter>Source Files\Render\RenderData\Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Primitives\IRenderPrimitives.h">
+      <Filter>Source Files\Render\RenderData\Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIGraphicsPipeline.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIDescriptor.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKISync.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Shaders\RenderShader.h">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Shaders\RenderMaterial.h">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIBuffer.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\GISystem.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\RenderImage.h">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\LightProbeNode.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\LightNode.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\RenderTypes.h">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Transform.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\VKInterface\VKIImage.h">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RendererPipeline.h">
+      <Filter>Source Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Shaders\RenderShaderBlocks.h">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Shaders\RenderUniform.h">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\RenderScene.h">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Camera.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\RenderShadow.h">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Core\Frustum.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Core.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Image2D.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\AppWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\AppUser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\UI\ImGUI\imgui_draw.cpp">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\UI\ImGUI\imgui_impl_glfw.cpp">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\UI\ImGUI\imgui_impl_vulkan.cpp">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\UI\ImGUI\imgui_widgets.cpp">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\UI\ImGUI\imgui.cpp">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\UI\ImGUI\imgui_demo.cpp">
+      <Filter>Source Files\Core\UI\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Mesh.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Importers\OBJImporter.cpp">
+      <Filter>Source Files\Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Importers\GLTFImporter.cpp">
+      <Filter>Source Files\Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\Node.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\Scene.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\MeshNode.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\Renderer.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIInstance.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIDevice.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKICommandBuffer.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKISwapChain.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIFramebuffer.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIRenderPass.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\RenderLight.cpp">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\Primitives\RenderMesh.cpp">
+      <Filter>Source Files\Render\RenderData\Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIGraphicsPipeline.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIDescriptor.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKISync.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\Shaders\RenderShader.cpp">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\Shaders\RenderMaterial.cpp">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIBuffer.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\GISystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\RenderImage.cpp">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\LightProbeNode.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\LightNode.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Transform.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\VKInterface\VKIImage.cpp">
+      <Filter>Source Files\Render\VKInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RendererPipeline.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\Shaders\RenderUniform.cpp">
+      <Filter>Source Files\Render\RenderData\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\RenderScene.cpp">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\RenderShadow.cpp">
+      <Filter>Source Files\Render\RenderData</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\FinalBlit.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\LightingPass.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\MeshFrag.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\MeshVert.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\PostProcess.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\ScreenVert.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\Common.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\CommonLighting.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Prebuild.py" />
+  </ItemGroup>
+</Project>

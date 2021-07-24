@@ -1,0 +1,32 @@
+# Ignore Every Thing
+*
+
+
+# Directories
+!*/
+/Build/
+/.vs/
+
+
+
+# Project and git
+!.gitignore
+!*.sln
+!*.bat
+!*.vcxproj
+!*.filters
+!*.user
+
+
+
+
+# Source
+!*.cpp
+!*.cc
+!*.h
+!*.hpp
+!*.txt
+!*.glsl
+!*.inl
+!*.py
+
