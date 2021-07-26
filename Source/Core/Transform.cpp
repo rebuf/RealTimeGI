@@ -130,3 +130,41 @@ glm::mat4 Transform::Ortho(float left, float right, float bottom, float top, flo
 {
 	return glm::orthoLH(left, right, bottom, top, near, far);
 }
+
+
+glm::mat4 Transform::GetCubeView(uint32_t face, const glm::vec3& pos)
+{
+	static glm::vec3 viewFw[6] = {
+		glm::vec3( 1.0f, 0.0f, 0.0f),
+		glm::vec3(-1.0f, 0.0f, 0.0f),
+
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f,-1.0f, 0.0f),
+
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f,-1.0f)
+	};
+
+
+	static glm::vec3 viewUp[6] = {
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+
+		glm::vec3(0.0f, 0.0f,-1.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f,-1.0f, 0.0f)
+	};
+
+	return Transform::LookAt(pos, pos + viewFw[face], viewUp[face]);
+}
+
+
+glm::mat4 Transform::GetCubeViewProj(uint32_t face, const glm::vec3& pos)
+{
+	glm::mat4 view = GetCubeView(face, pos);
+	glm::mat4 proj = Transform::Perspective(HALF_PI, 1.0f, 1.0f, 320000.0f);
+
+	return proj * view;
+}

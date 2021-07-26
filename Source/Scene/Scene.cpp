@@ -23,6 +23,8 @@
 
 #include "Scene.h"
 #include "Core/Box.h"
+#include "Application.h"
+#include "AppWindow.h"
 #include "Node.h"
 
 
@@ -101,6 +103,10 @@ void Scene::Destroy()
 
 void Scene::Update(float deltaTime)
 {
+	// Update Camera Aspect.
+	float aspect = Application::Get().GetMainWindow()->GetFrameBufferAspect();
+	mCamera.SetAspect(aspect);
+
 
 }
 
@@ -110,18 +116,16 @@ void Scene::RegisterNode(Node* node)
 	switch (node->GetType())
 	{
 	case ENodeType::Node:
-	{
 		//...
-	}
 		break;
 
 	case ENodeType::MeshNode:
-	{
-		// Renderable
 		AddRenderable(node);
-	}
 		break;
 
+	case ENodeType::LightProbe:
+		AddLight(node);
+		break;
 	}
 }
 
@@ -131,16 +135,15 @@ void Scene::UnregisterNode(Node* node)
 	switch (node->GetType())
 	{
 	case ENodeType::Node:
-	{
 		//...
-	}
 		break;
 
 	case ENodeType::MeshNode:
-	{
-		// Renderable...
 		RemoveRenderable(node);
-	}
+		break;
+
+	case ENodeType::LightProbe:
+		RemoveLight(node);
 		break;
 	}
 }

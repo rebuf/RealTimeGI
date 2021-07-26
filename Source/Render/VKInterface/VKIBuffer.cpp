@@ -22,6 +22,7 @@
 
 #include "VKIBuffer.h"
 #include "VKIDevice.h"
+#include "VKICommandBuffer.h"
 
 
 
@@ -141,13 +142,13 @@ void VKIBuffer::Destroy()
 }
 
 
-void VKIBuffer::UpdateData(void* data)
+void VKIBuffer::UpdateData(const void* data)
 {
 	UpdateData(0, mSize, data);
 }
 
 
-void VKIBuffer::UpdateData(VkDeviceSize offset, VkDeviceSize size, void* data)
+void VKIBuffer::UpdateData(VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
 	CHECK(mProperties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT && "Memory must be host visible.");
 
@@ -173,13 +174,13 @@ void VKIBuffer::UpdateData(VkDeviceSize offset, VkDeviceSize size, void* data)
 }
 
 
-void VKIBuffer::UpdateDataStaging(void* data)
+void VKIBuffer::UpdateDataStaging(const void* data)
 {
 	UpdateDataStaging(0, mSize, data);
 }
 
 
-void VKIBuffer::UpdateDataStaging(VkDeviceSize offset, VkDeviceSize size, void* data)
+void VKIBuffer::UpdateDataStaging(VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
 	// New Staging?
 	if (!mStaging)
@@ -213,4 +214,10 @@ void VKIBuffer::DestroyStaging()
 {
 	mStaging->Destroy();
 	mStaging.reset();
+}
+
+
+void VKIBuffer::CmdUpdate(VKICommandBuffer* cmdBuffer, uint32_t offset, uint32_t size, const void* data)
+{
+	vkCmdUpdateBuffer(cmdBuffer->GetCurrent(), mHandle, offset, size, data);
 }

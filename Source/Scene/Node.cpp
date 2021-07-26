@@ -50,6 +50,24 @@ void Node::SetTransform(const Transform& mtx)
 }
 
 
+void Node::SetTranslate(const glm::vec3& translate)
+{
+	mTransform.SetTranslate(translate);
+}
+
+
+void Node::SetScale(const glm::vec3& scale)
+{
+	mTransform.SetScale(scale);
+}
+
+
+void Node::SetRotate(const glm::quat& rotate)
+{
+	mTransform.SetRotate(rotate);
+}
+
+
 void Node::OnAdd(Scene* scene)
 {
 
@@ -60,6 +78,13 @@ void Node::OnRemove(Scene* scene)
 {
 
 }
+
+
+void Node::OnTransform()
+{
+
+}
+
 
 Box Node::GetBounds() const
 {

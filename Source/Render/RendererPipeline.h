@@ -28,6 +28,8 @@
 
 
 #include "Core/Core.h"
+#include "RenderData/RenderTypes.h"
+#include "RenderData/Shaders/RenderShaderBlocks.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 
@@ -38,6 +40,7 @@
 class RenderShader;
 class RenderScene;
 class RenderUniform;
+class RenderStageLightProbes;
 
 
 class VKIDevice;
@@ -63,28 +66,6 @@ struct RendererPipelineUniform
 
 };
 
-
-
-
-
-// Render Target in the renderer pipeline.
-struct PipelineRenderTarget
-{
-	// The Image.
-	UniquePtr<VKIImage> image;
-
-	// The View.
-	UniquePtr<VKIImageView> view;
-
-	// The Sampler.
-	UniquePtr<VKISampler> sampler;
-
-	// Reset Pointers.
-	void Reset();
-
-	// Destroy Vulkan Objects.
-	void Destroy();
-};
 
 
 
@@ -142,6 +123,9 @@ public:
 	// Retrun the uniforms.
 	inline const RendererPipelineUniform& GetUniforms() const { return mUniforms; }
 
+	// Returm LightProbes renderer stage.
+	inline RenderStageLightProbes* GetStageLightProbes() const { return mStageLightProbes.get(); }
+
 private:
 	// Setup/Create the renderer pipeline uniforms.
 	void SetupUniforms();
@@ -164,11 +148,14 @@ private:
 	// Setup the shadow passes.
 	void SetupShadowPasses();
 
-	// Rende Scene Shadows.
-	void RenderShadows(VKICommandBuffer* cmdBuffer);
+	// Rende Scene Shadow Maps.
+	void UpdateShadows(VKICommandBuffer* cmdBuffer);
 
-	//
-	void RenderLightProbes();
+	// Update Scene Light Probes.
+	void UpdateLightProbes(VKICommandBuffer* cmdBuffer);
+
+	// The stage for rendering the scene, the scene is rendered into the 
+	void RenderSceneStage(VKICommandBuffer* cmdBuffer);
 
 private:
 	// The vulkan device.
@@ -177,7 +164,7 @@ private:
 	// The vulkan swapchain.
 	VKISwapChain* mSwapchain;
 
-	// The Pipeline targets size.
+	// The Pipeline render targets size.
 	glm::vec2 mSize;
 
 	// The Pipeline viewport.
@@ -196,17 +183,20 @@ private:
 	// The scene we are currently rendering.
 	RenderScene* mScene;
 
+	// Common Block Data.
+	GUniform::CommonBlock mCommonBlock;
+
 	// GBuffer Targets.
-	PipelineRenderTarget mAlbedoTarget;
-	PipelineRenderTarget mBRDFTarget;
-	PipelineRenderTarget mNormalsTarget;
-	PipelineRenderTarget mDepthTarget;
+	StageRenderTarget mAlbedoTarget;
+	StageRenderTarget mBRDFTarget;
+	StageRenderTarget mNormalsTarget;
+	StageRenderTarget mDepthTarget;
 
 	// HDR Target.
-	PipelineRenderTarget mHDRTarget[2];
+	StageRenderTarget mHDRTarget[2];
 
 	// LDR Target.
-	PipelineRenderTarget mLDRTarget[2];
+	StageRenderTarget mLDRTarget[2];
 
 	// GBuffer Render Pass.
 	UniquePtr<VKIRenderPass> mGBufferPass;
@@ -231,6 +221,8 @@ private:
 	UniquePtr<VKIRenderPass> mDirShadowPass;
 	UniquePtr<VKIRenderPass> mOmniShadowPass;
 
+	//
+	UniquePtr<RenderStageLightProbes> mStageLightProbes;
 
 };
 

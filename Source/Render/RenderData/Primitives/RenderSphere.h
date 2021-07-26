@@ -24,60 +24,54 @@
 #pragma once
 
 
-
-
 #include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
+#include "IRenderPrimitives.h"
+#include "glm/vec3.hpp"
+
+
+
+class VKIBuffer;
+class RenderUniform;
+class VKICommandBuffer;
 
 
 
 
-class RenderLightProbe;
 
 
-
-
-
-
-
-
-// LightProbeNode:
-//    - 
+// RenderMesh:
+//    - Render data for a mesh.
 //
-class LightProbeNode : public Node
+class RenderSphere : public IRenderPrimitives
 {
 public:
 	// Construct.
-	LightProbeNode();
+	RenderSphere();
 
 	// Destruct.
-	~LightProbeNode();
+	~RenderSphere();
 
-	// Set/Get Probe Radius.
-	void SetRadius(float radius);
-	inline float GetRadius() const { return mRadius; }
+	// Update The Sphere Render Data.
+	void UpdateData();
 
-	// Return Probe position.
-	glm::vec3 GetPosition() const;
+	// Draw the mesh.
+	virtual void Draw(VKICommandBuffer* cmdBuffer) override;
 
-	// Return the render light probe.
-	inline RenderLightProbe* GetRenderLightProbe() { return mRenderLightProbe.get(); }
-
-	// Create/Update render light probe data.
-	void UpdateRenderLightProbe();
-
-protected:
-	// Called when the node transform changes.
-	virtual void OnTransform() override;
+	// Return the sphere unifrom for rendering multiple view layers.
+	inline RenderUniform* GetSphereUnifrom() const { return mSphereUnifrom.get(); }
 
 private:
-	// The Probe Influence Radiuss.
-	float mRadius;
+	// Vertex Buffer.
+	UniquePtr<VKIBuffer> mVertBuffer;
 
-	// The render data for this light probe.
-	UniquePtr<RenderLightProbe> mRenderLightProbe;
+	// Index Buffer.
+	UniquePtr<VKIBuffer> mIdxBuffer;
+
+	// The number of indicies in the index buffer.
+	uint32_t mNumIndices;
+
+	// Sphere Uniform for drawing sphere into 6 cubemap layers render pass.
+	UniquePtr<RenderUniform> mSphereUnifrom;
 };
-
 
 

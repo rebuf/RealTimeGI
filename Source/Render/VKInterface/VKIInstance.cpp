@@ -411,3 +411,9 @@ VkExtent2D VKIInstance::GetFramebufferSize()
 	fboSize.height = (uint32_t)height;
 	return fboSize;
 }
+
+
+void VKIInstance::ReQuerySurface()
+{
+	QuerySwapChainSupport(mPhysicalDevice);
+}

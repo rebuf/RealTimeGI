@@ -35,6 +35,7 @@
     <ClInclude Include="Source\Importers\OBJImporter.h" />
     <ClInclude Include="Source\Render\RenderData\Primitives\IRenderPrimitives.h" />
     <ClInclude Include="Source\Render\RenderData\Primitives\RenderMesh.h" />
+    <ClInclude Include="Source\Render\RenderData\Primitives\RenderSphere.h" />
     <ClInclude Include="Source\Render\RenderData\RenderImage.h" />
     <ClInclude Include="Source\Render\RenderData\RenderLight.h" />
     <ClInclude Include="Source\Render\RenderData\RenderScene.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="Source\Render\RenderData\Shaders\RenderUniform.h" />
     <ClInclude Include="Source\Render\Renderer.h" />
     <ClInclude Include="Source\Render\RendererPipeline.h" />
+    <ClInclude Include="Source\Render\RenderStageLightProbes.h" />
     <ClInclude Include="Source\Render\VKInterface\VKIBuffer.h" />
     <ClInclude Include="Source\Render\VKInterface\VKICommandBuffer.h" />
     <ClInclude Include="Source\Render\VKInterface\VKIDescriptor.h" />
@@ -64,6 +66,7 @@
     <ClInclude Include="Source\Scene\MeshNode.h" />
     <ClInclude Include="Source\Scene\Node.h" />
     <ClInclude Include="Source\Scene\Scene.h" />
+    <ClInclude Include="Source\Scene\SceneGlobalSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -85,6 +88,7 @@
     <ClCompile Include="Source\Importers\OBJImporter.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Render\RenderData\Primitives\RenderMesh.cpp" />
+    <ClCompile Include="Source\Render\RenderData\Primitives\RenderSphere.cpp" />
     <ClCompile Include="Source\Render\RenderData\RenderImage.cpp" />
     <ClCompile Include="Source\Render\RenderData\RenderLight.cpp" />
     <ClCompile Include="Source\Render\RenderData\RenderScene.cpp" />
@@ -94,6 +98,7 @@
     <ClCompile Include="Source\Render\RenderData\Shaders\RenderUniform.cpp" />
     <ClCompile Include="Source\Render\Renderer.cpp" />
     <ClCompile Include="Source\Render\RendererPipeline.cpp" />
+    <ClCompile Include="Source\Render\RenderStageLightProbes.cpp" />
     <ClCompile Include="Source\Render\VKInterface\VKIBuffer.cpp" />
     <ClCompile Include="Source\Render\VKInterface\VKICommandBuffer.cpp" />
     <ClCompile Include="Source\Render\VKInterface\VKIDescriptor.cpp" />
@@ -114,13 +119,18 @@
   <ItemGroup>
     <None Include="Prebuild.py" />
     <None Include="Resources\Shaders\Common.glsl" />
+    <None Include="Resources\Shaders\CubeCaptureFrag.glsl" />
+    <None Include="Resources\Shaders\CubeCaptureGeom.glsl" />
     <None Include="Resources\Shaders\FinalBlit.glsl" />
     <None Include="Resources\Shaders\CommonLighting.glsl" />
+    <None Include="Resources\Shaders\IBLFilter.glsl" />
     <None Include="Resources\Shaders\LightingPass.glsl" />
     <None Include="Resources\Shaders\MeshFrag.glsl" />
     <None Include="Resources\Shaders\MeshVert.glsl" />
     <None Include="Resources\Shaders\PostProcess.glsl" />
     <None Include="Resources\Shaders\ScreenVert.glsl" />
+    <None Include="Resources\Shaders\SphereGeom.glsl" />
+    <None Include="Resources\Shaders\SphereVert.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

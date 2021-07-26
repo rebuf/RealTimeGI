@@ -41,6 +41,9 @@ layout(binding = 0) uniform CommonBlock
 	//     - Values Ranges [0, width], [0, Height]
 	vec4 Viewport;
 	
+	// The size of the render target used for the current pass.
+	vec4 TargetSize;
+
 	// The environment sun direction.
 	vec4 SunDir;
 	
@@ -90,3 +93,17 @@ vec3 ComputeWorldPos(float Depth, vec2 TexCoord)
 	return WorldPos.xyz / WorldPos.w;
 }
 
+
+
+// Visualize CubeMap from screen coordiante.
+vec3 VisualizeCubeMap(samplerCube Map, vec2 Coord)
+{
+	Coord.y = 1.0 - Coord.y;
+
+	float Theta  = Coord.x * PI * 2.0;
+	float Phi    = (Coord.y - 0.5) * PI;
+	float CosPhi = cos(Phi);	
+
+	vec3 n = vec3(CosPhi * cos(Theta), CosPhi * sin(Theta), sin(Phi));
+	return texture(Map, n.xyz).rgb;
+}

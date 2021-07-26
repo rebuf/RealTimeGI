@@ -61,7 +61,7 @@ layout( push_constant ) uniform Constant
 
 
 // Output...
-#if defined(PIPELINE_STAGE_SHADOW)
+#if defined(PIPELINE_STAGE_DIR_SHADOW) || defined(PIPELINE_STAGE_OMNI_SHADOW)
 // Nothing for Shadow...
 #else
 layout(location = 0) out vec4 FragAlbedo;

@@ -32,6 +32,8 @@
 
 
 class VKIDevice;
+class VKICommandBuffer;
+
 
 
 
@@ -72,15 +74,18 @@ public:
 	void Destroy();
 
 	// Update buffer data by mapping the buffer memory, only used on host visible buffers.
-	void UpdateData(void* data);
-	void UpdateData(VkDeviceSize offset, VkDeviceSize size, void* data);
+	void UpdateData(const void* data);
+	void UpdateData(VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 	// Update data using staging buffer, used for local device memory.
-	void UpdateDataStaging(void* data);
-	void UpdateDataStaging(VkDeviceSize offset, VkDeviceSize size, void* data);
+	void UpdateDataStaging(const void* data);
+	void UpdateDataStaging(VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 	// Return the size of the buffer.
 	inline VkDeviceSize GetSize() const { return mSize; }
+
+	// Update the buffer using vkCmdUpdateBuffer.
+	void CmdUpdate(VKICommandBuffer* cmdBuffer, uint32_t offset, uint32_t size, const void* data);
 
 private:
 	// Allocate Device Memory for the created vulkan buffer.

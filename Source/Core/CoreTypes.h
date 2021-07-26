@@ -56,3 +56,12 @@ enum class ELogType
 	Error
 };
 
+
+
+
+// Macro that define bit wise operator for an enum class.
+#define DEFINE_ENUM_CLASS_BIT_OPERATORS(ENUM_CLASS, INT_TYPE) \
+	inline ENUM_CLASS operator&(const ENUM_CLASS& a, const ENUM_CLASS& b) { return static_cast<ENUM_CLASS>(static_cast<INT_TYPE>(a) & static_cast<INT_TYPE>(b)); } \
+	inline ENUM_CLASS operator|(const ENUM_CLASS& a, const ENUM_CLASS& b) { return static_cast<ENUM_CLASS>(static_cast<INT_TYPE>(a) | static_cast<INT_TYPE>(b)); } \
+	inline ENUM_CLASS operator~(const ENUM_CLASS& a) { return static_cast<ENUM_CLASS>(~static_cast<INT_TYPE>(a)); }
+

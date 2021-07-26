@@ -21,63 +21,42 @@
 
 
 
-#pragma once
+
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
 
 
 
-#include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
+#include "Common.glsl"
 
 
 
 
-class RenderLightProbe;
-
-
-
+// Input Attributes...
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec2 inTexCoord;
 
 
 
 
 
-// LightProbeNode:
-//    - 
-//
-class LightProbeNode : public Node
+// VERTEX OUTPUT...
+layout(location = 0) out VERTEX_OUT
 {
-public:
-	// Construct.
-	LightProbeNode();
-
-	// Destruct.
-	~LightProbeNode();
-
-	// Set/Get Probe Radius.
-	void SetRadius(float radius);
-	inline float GetRadius() const { return mRadius; }
-
-	// Return Probe position.
-	glm::vec3 GetPosition() const;
-
-	// Return the render light probe.
-	inline RenderLightProbe* GetRenderLightProbe() { return mRenderLightProbe.get(); }
-
-	// Create/Update render light probe data.
-	void UpdateRenderLightProbe();
-
-protected:
-	// Called when the node transform changes.
-	virtual void OnTransform() override;
-
-private:
-	// The Probe Influence Radiuss.
-	float mRadius;
-
-	// The render data for this light probe.
-	UniquePtr<RenderLightProbe> mRenderLightProbe;
-};
+	vec3 Position;
+} outVert;
 
 
+
+
+
+
+void main()
+{
+	gl_Position = vec4(inPosition, 1.0);
+
+	outVert.Position = inPosition;
+}
 

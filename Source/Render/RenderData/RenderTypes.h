@@ -23,6 +23,42 @@
 #pragma once
 
 
+#include "Core/Core.h"
+
+
+
+
+#define LIGHT_PROBES_TARGET_SIZE 256
+
+
+
+
+
+
+
+
+
+
+// Render Target in the renderer pipeline.
+struct StageRenderTarget
+{
+	// The Image.
+	UniquePtr<class VKIImage> image;
+
+	// The View.
+	UniquePtr<class VKIImageView> view;
+
+	// The Sampler.
+	UniquePtr<class VKISampler> sampler;
+
+	// Reset Pointers.
+	void Reset();
+
+	// Destroy Vulkan Objects.
+	void Destroy();
+};
+
+
 
 
 
@@ -48,9 +84,7 @@ enum class ERenderShaderStage : uint32_t
 
 
 // ERenderShaderStage Bit Operators
-inline ERenderShaderStage operator&(const ERenderShaderStage& a, const ERenderShaderStage& b) { return static_cast<ERenderShaderStage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); }
-inline ERenderShaderStage operator|(const ERenderShaderStage& a, const ERenderShaderStage& b) { return static_cast<ERenderShaderStage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); }
-inline ERenderShaderStage operator~(const ERenderShaderStage& a) { return static_cast<ERenderShaderStage>(~static_cast<uint32_t>(a)); }
+DEFINE_ENUM_CLASS_BIT_OPERATORS(ERenderShaderStage, uint32_t)
 
 
 

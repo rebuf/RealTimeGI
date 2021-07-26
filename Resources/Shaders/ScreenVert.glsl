@@ -25,6 +25,9 @@
 
 
 
+#include "Common.glsl"
+
+
 
 vec2 TriPos[3] = vec2[](
     vec2(-1.0,-1.0),
@@ -42,6 +45,7 @@ vec2 TriTexCoord[3] = vec2[](
 
 
 layout(location = 0) out vec2 TexCoord;
+layout(location = 1) out vec2 TargetTexCoord; // The texture coordinate for sampling render targets.
 
 
 
@@ -50,6 +54,6 @@ void main()
 {
     gl_Position = vec4(TriPos[gl_VertexIndex], 0.0, 1.0);
     TexCoord = TriTexCoord[gl_VertexIndex];
-
+    TargetTexCoord = TexCoord * ((inCommon.Viewport.zw - inCommon.Viewport.xy) / inCommon.TargetSize.xy);
 }
 

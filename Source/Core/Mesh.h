@@ -90,6 +90,10 @@ public:
 	RenderMesh* GetRenderMesh() { return mRenderMesh.get(); }
 	const RenderMesh* GetRenderMesh() const { return mRenderMesh.get(); }
 
+public:
+	// Create Sphere Mesh.
+	static Mesh* MakeSphere(uint32_t seg, float radius);
+
 private:
 	// Mesh Vertices.
 	std::vector<MeshVert> mVertices;

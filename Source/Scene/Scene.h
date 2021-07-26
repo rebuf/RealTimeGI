@@ -26,6 +26,7 @@
 
 
 #include "Core/Core.h"
+#include "SceneGlobalSettings.h"
 #include "Camera.h"
 
 #include <vector>
@@ -37,20 +38,6 @@ class Node;
 
 
 
-
-
-// Scene Globals Settings.
-struct SceneGlobal
-{
-	// The Sun Direction.
-	glm::vec3 sunDir;
-
-	// The Sun Color(RGB) & Power(A).
-	glm::vec4 sunColor;
-
-	// The Sun Power.
-	float sunPower;
-};
 
 
 
@@ -119,8 +106,8 @@ public:
 	inline const Camera& GetCamera() const { return mCamera; }
 
 	// Return Scene Global Settings.
-	inline SceneGlobal& GetGlobalSettings() { return mGlobal; }
-	inline const SceneGlobal& GetGlobalSettings() const { return mGlobal; }
+	inline SceneGlobalSettings& GetGlobal() { return mGlobal; }
+	inline const SceneGlobalSettings& GetGlobal() const { return mGlobal; }
 
 	// Reset camera view to look at the entire scene.
 	void ResetView();
@@ -161,7 +148,7 @@ private:
 	Camera mCamera;
 
 	// Global Settings.
-	SceneGlobal mGlobal;
+	SceneGlobalSettings mGlobal;
 };
 
 

@@ -73,7 +73,7 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 
 	// Shadow...
 	{
-		// Shadow for opaque objects.
+		// Directional shadow for opaque. 
 		SHADOW_DIR_SHADER[0] = Ptr<RenderShader>(new RenderShader());
 		SHADOW_DIR_SHADER[0]->SetDomain(ERenderShaderDomain::Mesh);
 		SHADOW_DIR_SHADER[0]->SetRenderPass(renderer->GetPipeline()->GetDirShadowPass());
@@ -90,6 +90,25 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 			ERenderShaderStage::Vertex | ERenderShaderStage::Fragment);
 
 		SHADOW_DIR_SHADER[0]->Create();
+
+
+		// Omni shadow for opaque. 
+		SHADOW_OMNI_SHADER[0] = Ptr<RenderShader>(new RenderShader());
+		SHADOW_OMNI_SHADER[0]->SetDomain(ERenderShaderDomain::Mesh);
+		SHADOW_OMNI_SHADER[0]->SetRenderPass(renderer->GetPipeline()->GetDirShadowPass());
+		SHADOW_OMNI_SHADER[0]->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "MeshVert_OmniShadow.spv");
+		SHADOW_OMNI_SHADER[0]->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "MeshFrag_OmniShadow.spv");
+		SHADOW_OMNI_SHADER[0]->SetViewport(0, 0, swExtent.width, swExtent.height);
+		SHADOW_OMNI_SHADER[0]->SetViewportDynamic(true);
+		SHADOW_OMNI_SHADER[0]->SetDepth(true, true);
+
+		SHADOW_OMNI_SHADER[0]->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::AllStages);
+
+		SHADOW_OMNI_SHADER[0]->AddPushConstant(0, 0, sizeof(GUniform::ShadowConstantBlock),
+			ERenderShaderStage::Vertex | ERenderShaderStage::Fragment);
+
+		SHADOW_OMNI_SHADER[0]->Create();
 	}
 
 
@@ -119,6 +138,7 @@ void RenderMaterial::DestroyMaterialShaders()
 	OPAQUE_SHADER->Destroy();
 
 	SHADOW_DIR_SHADER[0]->Destroy();
+	SHADOW_OMNI_SHADER[0]->Destroy();
 
 	MAT_DESC_SET[0]->Destroy();
 	MAT_DESC_SET[1]->Destroy();

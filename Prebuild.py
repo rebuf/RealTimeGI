@@ -31,6 +31,15 @@ AddShader("FRAGMENT", "PostProcess.glsl")
 AddShader("FRAGMENT", "LightingPass.glsl")
 AddShader("FRAGMENT", "FinalBlit.glsl")
 
+AddShader("FRAGMENT", "CubeCaptureFrag.glsl")
+AddShader("GEOMETRY", "CubeCaptureGeom.glsl")
+
+AddShader("VERTEX", "SphereVert.glsl")
+AddShader("GEOMETRY", "SphereGeom.glsl")
+AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_IRRADIANCE", "_Irradiance")
+AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_SPECULAR", "_Specular")
+
+
 # Mesh Shaders...
 AddShader("VERTEX",   "MeshVert.glsl")
 AddShader("FRAGMENT", "MeshFrag.glsl")
@@ -70,7 +79,7 @@ for shader in shaders:
 
 
 	if ft >= gt:
-		print("Compile Shader ->", shaderDir + os.path.splitext(shader[1])[0] + shader[3] + ".spv")
+		print("Compile Shader ->", spvDir + os.path.splitext(shader[1])[0] + shader[3] + ".spv")
 		cmd = "{0} -fshader-stage={4} {1} -o {2} {3}".format(
 			glslc, shaderSrcPath, shaderSPVPath,
 			shader[2], shader[0].lower()

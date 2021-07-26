@@ -38,6 +38,7 @@ class RendererPipeline;
 class RenderShader;
 class RenderUniform;
 class RenderScene;
+class RenderSphere;
 
 class VKIInstance;
 class VKIDevice;
@@ -135,6 +136,9 @@ public:
 	// Return the rendrer pipeline.
 	inline RendererPipeline* GetPipeline() { return mPipeline.get(); }
 
+	// Return the renderer sphere.
+	inline RenderSphere* GetSphere() { return mRSphere.get(); }
+
 	// Wait for the queues to be Idle/
 	void WaitForIdle();
 
@@ -147,6 +151,9 @@ private:
 
 	// Record Commands for current frame.
 	void RecordFrameCommands(uint32_t imgIndex);
+
+	// Recreate the swapchain to match the current surface size.
+	void RecreateSwapchain();
 
 public:
 	// The number of concurrent frames we are allowed to render.
@@ -167,6 +174,9 @@ private:
 
 	// The Render Data for the current scene we are rendering.
 	UniquePtr<RenderScene> mRScene;
+
+	// The Render Sphere Mesh, used to draw sphere for various render stages.
+	UniquePtr<RenderSphere> mRSphere;
 };
 
 

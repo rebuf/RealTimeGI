@@ -30,6 +30,7 @@
 #include "RenderData/Shaders/RenderUniform.h"
 #include "RenderData/Shaders/RenderShaderBlocks.h"
 #include "RenderData/Shaders/RenderMaterial.h"
+#include "RenderData/Primitives/RenderSphere.h"
 
 
 #include "VKInterface/VKIInstance.h"
@@ -96,6 +97,10 @@ void Renderer::Initialize()
 	// Create Vulkan Sync Objects.
 	CreateVKSync();
 
+	// The Renderer Sphere.
+	mRSphere = UniquePtr<RenderSphere>(new RenderSphere());
+	mRSphere->UpdateData();
+
 	// The Renderer Pipeline.
 	mPipeline = UniquePtr<RendererPipeline>(new RendererPipeline());
 	mPipeline->Initialize();
@@ -103,6 +108,7 @@ void Renderer::Initialize()
 	// Render Scene.
 	mRScene = UniquePtr<RenderScene>(new RenderScene());
 	mRScene->Initialize();
+
 
 	// Material Shaders.
 	RenderMaterial::SetupMaterialShaders(this, mRScene->GetTransformUniform());
@@ -203,7 +209,7 @@ void Renderer::EndRender()
 	// Swapchain need to be recreated?
 	if (mVKData.swapchain->NeedRecreate())
 	{
-		mVKData.swapchain->Recreate();
+		RecreateSwapchain();
 	}
 
 }
@@ -316,4 +322,15 @@ void Renderer::WaitForIdle()
 	// Wait for all queue to become idle.
 	vkDeviceWaitIdle(mVKData.device->Get());
 
+}
+
+
+void Renderer::RecreateSwapchain()
+{
+	WaitForIdle();
+	mVKData.instance->ReQuerySurface();
+	mVKData.swapchain->Recreate();
+
+	VkExtent2D swExtent = mVKData.swapchain->GetExtent();
+	mPipeline->Resize(glm::ivec2(swExtent.width, swExtent.height));
 }

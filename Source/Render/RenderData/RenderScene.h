@@ -37,6 +37,7 @@ class IRenderPrimitives;
 class RenderUniform;
 class IRenderShadow;
 class RenderDirShadow;
+class RenderLightProbe;
 class VKICommandBuffer;
 class VKIImage;
 class VKIFramebuffer;
@@ -133,6 +134,12 @@ public:
 	// Return the sun shadow.
 	inline RenderDirShadow* GetSunShadow() { return mSunShadow.get(); }
 
+	// Return if the scene has dirty light probes that needs to be updated before rendering.
+	inline bool HasDirtyLightProbes() const { return mHasDirtyLightProbe; }
+
+	// Return the light probes in the render scene.
+	inline const std::vector<RenderLightProbe*>& GetLightProbes() const { return mLightProbes; }
+
 private:
 	// Add new primitive to be rendered by the scene.
 	RDScenePrimitive* AddNewPrimitive(IRenderPrimitives* primitive, const glm::mat4& transform);
@@ -176,4 +183,10 @@ private:
 
 	// The Sun Shadow.
 	UniquePtr<RenderDirShadow> mSunShadow;
+
+	// Light Probes to render in the scene.
+	std::vector<RenderLightProbe*> mLightProbes;
+
+	// This render scene include a light probe that needs to be updated.
+	bool mHasDirtyLightProbe;
 };

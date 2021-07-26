@@ -27,8 +27,10 @@
 #include "Application.h"
 #include "Render/Renderer.h"
 #include "Render/RendererPipeline.h"
+
 #include "Scene/Scene.h"
 #include "Scene/MeshNode.h"
+#include "Scene/LightProbeNode.h"
 
 #include "Render/Renderer.h"
 #include "Render/RenderData/RenderShadow.h"
@@ -37,6 +39,8 @@
 #include "Render/RenderData/Shaders/RenderShader.h"
 #include "Render/RenderData/Shaders/RenderUniform.h"
 #include "Render/RenderData/Shaders/RenderShaderBlocks.h"
+#include "Render/RenderData/RenderLight.h"
+
 
 #include "Render/VKInterface/VKICommandBuffer.h"
 #include "Render/VKInterface/VKIDescriptor.h"
@@ -64,6 +68,7 @@ void RDEnvironment::Reset()
 
 RenderScene::RenderScene()
 	: mScene(nullptr)
+	, mHasDirtyLightProbe(false)
 {
 
 }
@@ -114,7 +119,10 @@ void RenderScene::BuildRenderScene(Scene* scene)
 void RenderScene::Reset()
 {
 	mScene = nullptr;
+	mHasDirtyLightProbe = false;
 	mEnvironment.Reset();
+	mLightProbes.clear();
+
 
 	for (size_t i = 0; i < mPrimitives.size(); ++i)
 		delete mPrimitives[i];
@@ -148,18 +156,41 @@ void RenderScene::CollectSceneView(Scene* scene)
 
 void RenderScene::CollectSceneLights(Scene* scene)
 {
-	// The Sun.
-	mEnvironment.sunColorAndPower.r = scene->GetGlobalSettings().sunColor.r;
-	mEnvironment.sunColorAndPower.g = scene->GetGlobalSettings().sunColor.g;
-	mEnvironment.sunColorAndPower.b = scene->GetGlobalSettings().sunColor.b;
-	mEnvironment.sunColorAndPower.a = scene->GetGlobalSettings().sunPower;
-
-	glm::vec3 sunDir = scene->GetGlobalSettings().sunDir;
+	// The Sun...
+	glm::vec3 sunDir = scene->GetGlobal().GetSunDir();
 	mEnvironment.sunDir = glm::vec4(sunDir, 0.0f);
 
-	glm::mat4 sunView = Transform::LookAt(sunDir * -10000.0f, glm::vec3(0.0f), Transform::UP);
+	mEnvironment.sunColorAndPower = glm::vec4(scene->GetGlobal().GetSunColor(),
+		scene->GetGlobal().GetSunPower());
+
+	glm::mat4 sunView = Transform::LookAt(sunDir * -2000.0f, glm::vec3(0.0f), Transform::UP);
 	glm::mat4 sunProj = Transform::Ortho(1000, -1000, 1000, -1000, 1.0f, 10000.0f);
 	mSunShadow->SetShadowMatrix(sunProj * sunView);
+
+	// Flag sun shadow as dirty.
+	mSunShadow->SetDirty(scene->GetGlobal().HasDirtyFlag(ESceneGlobalDirtyFlag::DirtySun));
+	scene->GetGlobal().ClearDirtyFlag(ESceneGlobalDirtyFlag::DirtySun);
+
+
+	// Lights & Light Probes...
+	for (auto& node : scene->GetLights())
+	{
+		switch (node->GetType())
+		{
+		case ENodeType::Light:
+			break;
+
+		case ENodeType::LightProbe:
+		{
+			LightProbeNode* probe = static_cast<LightProbeNode*>(node);
+			RenderLightProbe* rprobe = probe->GetRenderLightProbe();
+			mLightProbes.emplace_back(rprobe);
+			mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->IsDirty();
+		}
+			break;
+		}
+	}
+
 
 }
 

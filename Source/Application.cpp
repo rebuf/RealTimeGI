@@ -22,11 +22,13 @@
 
 
 #include "Application.h"
+#include "Core/GISystem.h"
 #include "AppWindow.h"
 #include "Render/Renderer.h"
-#include "Scene/Scene.h"
 #include "Importers/GLTFImporter.h"
-#include "Core/GISystem.h"
+
+#include "Scene/Scene.h"
+#include "Scene/LightProbeNode.h"
 
 
 #include "GLFW/glfw3.h"
@@ -84,9 +86,16 @@ void Application::Initialize()
 
 	GLTFImporter::Import(mMainScene.get(), RESOURCES_DIRECTORY "Models/Sponza/Sponza.gltf");
 	mMainScene->ResetView(); // Reset view.
-	mMainScene->GetGlobalSettings().sunColor = glm::vec4(1.0f);
-	mMainScene->GetGlobalSettings().sunPower = 1.0f;
-	mMainScene->GetGlobalSettings().sunDir = glm::normalize(glm::vec3(-1.0f));
+	mMainScene->GetGlobal().SetSunColor( glm::vec3(1.0f) );
+	mMainScene->GetGlobal().SetSunPower(1.0f);
+	mMainScene->GetGlobal().SetSunDir( glm::normalize(glm::vec3(-1.0f)) );
+
+	//
+	Ptr<LightProbeNode> tmp0(new LightProbeNode());
+	tmp0->SetTranslate(glm::vec3(0.0f, 0.0f, 50.0f));
+	tmp0->SetRadius(1000.0f);
+	tmp0->UpdateRenderLightProbe();
+	mMainScene->AddNode(tmp0);
 
 }
 

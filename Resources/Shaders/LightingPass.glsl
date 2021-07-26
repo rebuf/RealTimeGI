@@ -33,6 +33,7 @@
 
 // Vertex Input...
 layout(location = 0) in vec2 TexCoord;
+layout(location = 1) in vec2 TargetTexCoord; // The texture coordinate for sampling render targets.
 
 
 // G-Buffer Input...
@@ -50,10 +51,10 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-	vec4 Albedo = texture(gAlbedo, TexCoord);
-	vec4 BRDF = texture(gBRDF, TexCoord);
-	vec3 Normal = normalize(texture(gNormal, TexCoord).xyz);
-	float Depth = texture(gDepth, TexCoord).r;
+	vec4 Albedo = texture(gAlbedo, TargetTexCoord);
+	vec4 BRDF = texture(gBRDF, TargetTexCoord);
+	vec3 Normal = normalize(texture(gNormal, TargetTexCoord).xyz);
+	float Depth = texture(gDepth, TargetTexCoord).r;
 
 
 	// Surface...
@@ -66,7 +67,7 @@ void main()
 	vec3 Lighting = ComputeSunLight(Surface);
 
 
-	FragColor.rgb = Lighting;
+	FragColor.rgb = Normal * 0.5 + 0.5;
 	FragColor.a = 1.0;
 }
 

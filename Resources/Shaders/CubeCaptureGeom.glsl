@@ -20,64 +20,50 @@
 
 
 
-
-#pragma once
-
-
-
-
-#include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
 
 
-
-class RenderLightProbe;
-
+#include "Common.glsl"
 
 
+layout (triangles) in;
+layout (triangle_strip, max_vertices=3) out;
 
 
+// VERTX OUTPUT...
+layout(location = 0) in vec2 inTexCoord[];
+layout(location = 1) in vec2 inTargetTexCoord[];
 
 
+// GEOM OUTPUT...
+layout(location = 0) out vec2 TexCoord;
+layout(location = 1) out vec2 TargetTexCoord; // The texture coordinate for sampling render targets.
 
-// LightProbeNode:
-//    - 
-//
-class LightProbeNode : public Node
+
+layout( push_constant ) uniform Constant
 {
-public:
-	// Construct.
-	LightProbeNode();
+	// Layer
+	int CubeLayer;
 
-	// Destruct.
-	~LightProbeNode();
-
-	// Set/Get Probe Radius.
-	void SetRadius(float radius);
-	inline float GetRadius() const { return mRadius; }
-
-	// Return Probe position.
-	glm::vec3 GetPosition() const;
-
-	// Return the render light probe.
-	inline RenderLightProbe* GetRenderLightProbe() { return mRenderLightProbe.get(); }
-
-	// Create/Update render light probe data.
-	void UpdateRenderLightProbe();
-
-protected:
-	// Called when the node transform changes.
-	virtual void OnTransform() override;
-
-private:
-	// The Probe Influence Radiuss.
-	float mRadius;
-
-	// The render data for this light probe.
-	UniquePtr<RenderLightProbe> mRenderLightProbe;
-};
+} inCubeCapture;
 
 
+
+
+void main()
+{
+  gl_Layer = inCubeCapture.CubeLayer;
+
+  for (int i = 0; i < 3; ++i)
+  {
+    gl_Position = gl_in[i].gl_Position;
+    TexCoord = inTexCoord[i];
+    TargetTexCoord = inTargetTexCoord[i];
+    EmitVertex();
+  }
+
+  EndPrimitive();
+}
 

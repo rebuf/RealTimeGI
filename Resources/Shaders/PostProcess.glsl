@@ -29,8 +29,9 @@
 
 
 
-// Input...
+// Vertex Input...
 layout(location = 0) in vec2 TexCoord;
+layout(location = 1) in vec2 TargetTexCoord; // The texture coordinate for sampling render targets.
 
 
 // Input...
@@ -44,7 +45,7 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-	FragColor = texture(RenderTarget0, TexCoord);
+	FragColor = texture(RenderTarget0, TargetTexCoord);
 
 	FragColor.rgb = pow(FragColor.rgb, vec3(0.45454545));
 	FragColor.a = 1.0;

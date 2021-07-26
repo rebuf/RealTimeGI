@@ -48,6 +48,11 @@ enum class ENodeType
 	// Mesh Node.
 	MeshNode,
 
+	//
+	Light,
+
+	// Light Probe.
+	LightProbe
 };
 
 
@@ -73,7 +78,12 @@ public:
 
 	// Set/Get node transformation.
 	void SetTransform(const Transform& mtx);
-	inline const Transform& GetTransform() { return mTransform; }
+	inline const Transform& GetTransform() const { return mTransform; }
+
+	// Set node transformation per component.
+	void SetTranslate(const glm::vec3& translate);
+	void SetScale(const glm::vec3& scale);
+	void SetRotate(const glm::quat& rotate);
 
 	// Return the type of the node.
 	inline ENodeType GetType() { return mType; }
@@ -87,6 +97,9 @@ protected:
 
 	// Called when the node has been removed from the scene.
 	virtual void OnRemove(Scene* scene);
+
+	// Called when the node transform changes.
+	virtual void OnTransform();
 
 protected:
 	// The Node Type.

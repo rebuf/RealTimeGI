@@ -348,5 +348,14 @@ void VKISwapChain::Recreate()
 {
 	mNeedRecreate = false;
 
-	CHECK(0 && "TODO: Implement Recreation of swpchain.");
+	// Destroy the old swapchain...
+	Destroy();
+
+	// Recreate...
+	CreateSwapchain(mVKDevice);
+
+	// Clear frame fences...
+	for (size_t i = 0; i < mFrameFences.size(); ++i)
+		mFrameFences[i] = nullptr;
+
 }

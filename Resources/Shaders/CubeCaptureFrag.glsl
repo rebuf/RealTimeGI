@@ -20,64 +20,32 @@
 
 
 
-
-#pragma once
-
-
-
-
-#include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
 
 
-
-class RenderLightProbe;
-
+#include "Common.glsl"
 
 
 
+// Geom Input...
+layout(location = 0) in vec2 TexCoord;
+layout(location = 1) in vec2 TargetTexCoord; // The texture coordinate for sampling render targets.
+
+// Input...
+layout(binding = 1) uniform sampler2D CaptureRender;
+
+
+// Output...
+layout(location = 0) out vec4 FragColor;
 
 
 
-
-// LightProbeNode:
-//    - 
-//
-class LightProbeNode : public Node
+void main()
 {
-public:
-	// Construct.
-	LightProbeNode();
+	vec4 RenderColor = texture(CaptureRender, TargetTexCoord);
 
-	// Destruct.
-	~LightProbeNode();
-
-	// Set/Get Probe Radius.
-	void SetRadius(float radius);
-	inline float GetRadius() const { return mRadius; }
-
-	// Return Probe position.
-	glm::vec3 GetPosition() const;
-
-	// Return the render light probe.
-	inline RenderLightProbe* GetRenderLightProbe() { return mRenderLightProbe.get(); }
-
-	// Create/Update render light probe data.
-	void UpdateRenderLightProbe();
-
-protected:
-	// Called when the node transform changes.
-	virtual void OnTransform() override;
-
-private:
-	// The Probe Influence Radiuss.
-	float mRadius;
-
-	// The render data for this light probe.
-	UniquePtr<RenderLightProbe> mRenderLightProbe;
-};
-
-
+	FragColor = RenderColor;
+}
 

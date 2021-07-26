@@ -98,6 +98,8 @@ void VKIDevice::CreateDevice(VKIInstance* owner)
 	// Features in the physical device we want to enable/use through our logical device.
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
+	deviceFeatures.geometryShader = VK_TRUE;
+
 
 	// Required Ext..
 	std::vector<const char*> reqExt;

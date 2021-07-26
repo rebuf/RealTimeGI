@@ -31,6 +31,7 @@
 
 // Vertex Input...
 layout(location = 0) in vec2 TexCoord;
+layout(location = 1) in vec2 TargetTexCoord; // The texture coordinate for sampling render targets.
 
 // Input...
 layout(binding = 1) uniform sampler2D FinalRender;
@@ -43,7 +44,7 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-	vec4 RenderColor = texture(FinalRender, TexCoord);
+	vec4 RenderColor = texture(FinalRender, TargetTexCoord);
 
 	FragColor = RenderColor;
 }

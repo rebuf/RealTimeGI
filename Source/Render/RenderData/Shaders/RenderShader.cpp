@@ -89,6 +89,14 @@ RenderShader::RenderShader()
 
 	mPipeline = UniquePtr<VKIGraphicsPipeline>(new VKIGraphicsPipeline());
 	mPipeline->SetDescriptorLayout(mDescLayout.get());
+
+	// Initial
+	mPipeline->SetPolygonMode(VK_POLYGON_MODE_FILL);
+	mPipeline->SetLineWidth(1.0f);
+	mPipeline->SetCulling(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+	mPipeline->SetDepthOp(VK_COMPARE_OP_LESS);
+	mPipeline->SetStencil(false);
+
 }
 
 
@@ -188,13 +196,6 @@ void RenderShader::CleareInput()
 
 void RenderShader::SetupPipelineDomain()
 {
-	mPipeline->SetPolygonMode(VK_POLYGON_MODE_FILL);
-	mPipeline->SetLineWidth(1.0f);
-	mPipeline->SetCulling(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-	mPipeline->SetDepthOp(VK_COMPARE_OP_LESS);
-	mPipeline->SetStencil(false);
-
-
 	// Per-Domain properties
 	switch (mDomain)
 	{

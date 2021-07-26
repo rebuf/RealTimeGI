@@ -181,7 +181,111 @@ void VKIImage::SetMipLevels(uint32_t levels)
 }
 
 
+void VKIImage::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout newLayout, VkImageAspectFlags aspect)
+{
+	// Barrier...
+	VkImageMemoryBarrier imgBarrier{};
+	imgBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imgBarrier.oldLayout = mLayout;
+	imgBarrier.newLayout = newLayout;
+	imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imgBarrier.image = mHandle;
+	imgBarrier.subresourceRange.aspectMask = aspect;
+	imgBarrier.subresourceRange.baseMipLevel = 0;
+	imgBarrier.subresourceRange.levelCount = mMipLevels;
+	imgBarrier.subresourceRange.baseArrayLayer = 0;
+	imgBarrier.subresourceRange.layerCount = mLayers;
 
+	VkPipelineStageFlags srcStage, dstStage;
+	ComputePipelineStage(newLayout, imgBarrier, srcStage, dstStage);
+
+
+	// Transition...
+	vkCmdPipelineBarrier(cmd, 
+		srcStage, dstStage,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &imgBarrier);
+
+	mLayout = newLayout;
+}
+
+
+void VKIImage::ComputePipelineStage(VkImageLayout newLayout, VkImageMemoryBarrier& imgBarrier, 
+	VkPipelineStageFlags& src, VkPipelineStageFlags& dst)
+{
+	// Transition from Unedefined?
+	if (mLayout == VK_IMAGE_LAYOUT_UNDEFINED)
+	{
+		imgBarrier.srcAccessMask = 0;
+		src = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+		// To?
+		switch (newLayout)
+		{
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			imgBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			dst = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			imgBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dst = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			imgBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dst = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			break;
+
+		default:
+			CHECK(0 && "Unsupported Transition.");
+			break;
+		}
+
+	}
+	else if (mLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		// TRANSFER_DST -> SHADER_READ_ONLY 
+		if (newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		{
+			imgBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			imgBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			src = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			dst = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+	}
+	else if (mLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+	{
+		// COLOR_ATTACHMENT -> SHADER_READ_ONLY 
+		if (newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		{
+			imgBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			imgBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			src = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dst = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+	}
+	else if (mLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		// SHADER_READ_ONLY - > COLOR_ATTACHMENT
+		if (newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+		{
+			imgBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			imgBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			src = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dst = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+	}
+	else
+	{
+		CHECK(0 && "Unsupported Transition.");
+	}
+
+}
 
 
 

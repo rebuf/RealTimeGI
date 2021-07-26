@@ -35,6 +35,7 @@
 
 class Renderer;
 class VKIBuffer;
+class VKICommandBuffer;
 
 
 
@@ -53,6 +54,9 @@ public:
 	// Destruct.
 	~RenderUniform();
 
+	// Set this uniform buffer usage as transfer dst.
+	void SetTransferDst(bool value);
+
 	// Create Uniform.
 	void Create(Renderer* owner, uint32_t size, bool isDynamic);
 
@@ -60,10 +64,13 @@ public:
 	void Destroy();
 
 	// Update the buffer with data.
-	void Update(uint32_t frame, uint32_t offset, uint32_t size, void* data);
+	void Update(uint32_t frame, uint32_t offset, uint32_t size, const void* data);
 
 	// Update the buffer with data with the same size as the uniform buffer.
-	void Update(uint32_t frame, void* data);
+	void Update(uint32_t frame, const void* data);
+
+	// Update the buffer using command.
+	void CmdUpdate(VKICommandBuffer* cmdBuffer, int32_t frame, uint32_t offset, uint32_t size, const void* data);
 
 	// Return the buffers.
 	std::vector<VKIBuffer*> GetBuffers() const;
@@ -74,5 +81,8 @@ private:
 
 	// Is this uniform dynamic.
 	bool mIsDynamic;
+
+	// if true the buffer usage include transfer dst.
+	bool mIsTransferDst;
 };
 

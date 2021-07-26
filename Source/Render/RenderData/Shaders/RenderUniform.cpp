@@ -24,11 +24,14 @@
 #include "RenderUniform.h"
 #include "Render/Renderer.h"
 #include "Render/VKInterface/VKIBuffer.h"
+#include "Render/VKInterface/VKICommandBuffer.h"
 
 
 
 
 RenderUniform::RenderUniform()
+	: mIsTransferDst(false)
+	, mIsDynamic(false)
 {
 
 }
@@ -50,9 +53,18 @@ void RenderUniform::Create(Renderer* owner, uint32_t size, bool isDynamic)
 	{
 		mBuffers[i] = UniquePtr<VKIBuffer>(new VKIBuffer());
 		mBuffers[i]->SetSize((VkDeviceSize)size);
-		mBuffers[i]->SetUsage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 		mBuffers[i]->SetMemoryProperties(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		if (mIsTransferDst)
+		{
+			mBuffers[i]->SetUsage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+		}
+		else
+		{
+			mBuffers[i]->SetUsage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+		}
+
 		mBuffers[i]->CreateBuffer(owner->GetVKDevice());
 	}
 }
@@ -81,13 +93,25 @@ std::vector<VKIBuffer*> RenderUniform::GetBuffers() const
 }
 
 
-void RenderUniform::Update(uint32_t frame, uint32_t offset, uint32_t size, void* data)
+void RenderUniform::Update(uint32_t frame, uint32_t offset, uint32_t size, const void* data)
 {
 	mBuffers[frame]->UpdateData(offset, size, data);
 }
 
 
-void RenderUniform::Update(uint32_t frame, void* data)
+void RenderUniform::Update(uint32_t frame, const void* data)
 {
 	mBuffers[frame]->UpdateData(data);
+}
+
+
+void RenderUniform::CmdUpdate(VKICommandBuffer* cmdBuffer, int32_t frame, uint32_t offset, uint32_t size, const void* data)
+{
+	mBuffers[frame]->CmdUpdate(cmdBuffer, offset, size, data);
+}
+
+
+void RenderUniform::SetTransferDst(bool value)
+{
+	mIsTransferDst = value;
 }

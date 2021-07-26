@@ -68,9 +68,9 @@ public:
 	void SetRotate(glm::vec3 euler); // Set Rotation using Euler angles.
 
 	// Get Transform...
-	inline const glm::vec3& SetTranslate() const { return mTranslate; }
-	inline const glm::vec3& SetScale() const { return mScale; }
-	inline const glm::quat& SetRotate() const { return mRotate; }
+	inline const glm::vec3& GetTranslate() const { return mTranslate; }
+	inline const glm::vec3& GetScale() const { return mScale; }
+	inline const glm::quat& GetRotate() const { return mRotate; }
 	glm::vec3 GetRotate(); // Return Rotation as Euler angles.
 
 	// Create a view matrix from look at.
@@ -81,6 +81,10 @@ public:
 
 	// Return orthographic transform.
 	static glm::mat4 Ortho(float left, float right, float bottom, float top, float near, float far);
+
+	// Return cubemap view & projection matrix for specific face index.
+	static glm::mat4 GetCubeView(uint32_t face, const glm::vec3& pos);
+	static glm::mat4 GetCubeViewProj(uint32_t face, const glm::vec3& pos);
 
 private:
 	// Update cached matrix.

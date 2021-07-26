@@ -95,12 +95,18 @@ public:
 	// The Image Layout.
 	inline VkImageLayout GetLayout() const { return mLayout; }
 
+	// Transition the image layout to a new one.
+	void TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout newLayout, VkImageAspectFlags aspect);
+
 private:
 	// Allocate Device Memory for the created vulkan image.
 	void AllocateMemory();
 
 	// Get the memory type index that best suits the created image.
 	void GetMemoryInfo(VkDeviceSize& outAllocateSize, uint32_t& outTypeIndex);
+
+	// Compupte the pipeline stages used in memory barrier when doing layout transition.
+	void ComputePipelineStage(VkImageLayout newLayout, VkImageMemoryBarrier& imgBarrier, VkPipelineStageFlags& src, VkPipelineStageFlags& dst);
 
 private:
 	// Vulkan Image Handle.

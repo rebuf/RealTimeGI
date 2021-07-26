@@ -106,6 +106,12 @@ public:
 	// The shadow matrix.
 	inline void SetShadowMatrix(const glm::mat4& mtx) { mShadowMatrix = mtx; }
 
+	// Flag/Unflag this shadow map as dirty.
+	inline void SetDirty(bool val) { mIsDirty = val; }
+
+	// Return true if this shadow map is drity and need updating.
+	inline bool IsDirty() const { return mIsDirty; }
+
 private:
 	// The Shadow map contain the depth.
 	UniquePtr<VKIImage> mShadowMap;
@@ -124,4 +130,7 @@ private:
 
 	// Shadow Matrix for rendering shadow map.
 	glm::mat4 mShadowMatrix;
+
+	// If true the shadow map is dirty and need to be udpated.
+	bool mIsDirty;
 };

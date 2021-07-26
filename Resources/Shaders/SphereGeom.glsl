@@ -20,64 +20,61 @@
 
 
 
-
-#pragma once
-
-
-
-
-#include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
 
 
-
-class RenderLightProbe;
-
+#include "Common.glsl"
 
 
-
-
+layout (triangles) in;
+layout (triangle_strip, max_vertices=18) out;
 
 
 
-// LightProbeNode:
-//    - 
-//
-class LightProbeNode : public Node
+// VERTEX OUTPUT...
+layout(location = 0) in VERTEX_OUT
 {
-public:
-	// Construct.
-	LightProbeNode();
-
-	// Destruct.
-	~LightProbeNode();
-
-	// Set/Get Probe Radius.
-	void SetRadius(float radius);
-	inline float GetRadius() const { return mRadius; }
-
-	// Return Probe position.
-	glm::vec3 GetPosition() const;
-
-	// Return the render light probe.
-	inline RenderLightProbe* GetRenderLightProbe() { return mRenderLightProbe.get(); }
-
-	// Create/Update render light probe data.
-	void UpdateRenderLightProbe();
-
-protected:
-	// Called when the node transform changes.
-	virtual void OnTransform() override;
-
-private:
-	// The Probe Influence Radiuss.
-	float mRadius;
-
-	// The render data for this light probe.
-	UniquePtr<RenderLightProbe> mRenderLightProbe;
-};
+	vec3 Position;
+} inGeom[];
 
 
+
+
+// GEOMETRY OUTPUT...
+layout(location = 0) out GEOM_OUT
+{
+	vec3 Position;
+} outGeom;
+
+
+
+// 
+layout(binding = 1) uniform SphereTransfrom
+{
+  mat4 Proj;
+  mat4 View[6];
+} inSphere;
+
+
+
+void main()
+{
+  for (int f = 0; f < 6; ++f)
+  {
+    gl_Layer = f;
+
+    for (int i = 0; i < 3; ++i)
+    {
+      outGeom.Position = inGeom[i].Position;
+      gl_Position = inSphere.Proj * inSphere.View[f] * gl_in[i].gl_Position;
+      EmitVertex();
+    }
+
+    
+    EndPrimitive();
+  }
+
+}
 

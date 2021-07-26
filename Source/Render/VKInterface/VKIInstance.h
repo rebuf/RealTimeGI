@@ -159,6 +159,9 @@ public:
 	// Return the current framebuffer size aquired from our windowing system.
 	VkExtent2D GetFramebufferSize();
 
+	// Update/Query surface information from the current physical device.
+	void ReQuerySurface();
+
 private:
 #if USE_VULKAN_VALIDATION_LAYER
 	// Chech if validation layer supported by the vulkan driver.

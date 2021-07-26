@@ -41,6 +41,7 @@
 
 RenderDirShadow::RenderDirShadow()
 	: mSize(0, 0)
+	, mIsDirty(true)
 {
 
 }

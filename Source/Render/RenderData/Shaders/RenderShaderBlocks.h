@@ -59,7 +59,10 @@ namespace GUniform
 
 		// The render viewport postion and size, X,Y: Position, and Z,W: Size.
 		//     - Values Ranges [0, width], [0, Height]
-		glm::vec4 viewport;
+		alignas(16) glm::vec4 viewport;
+
+		// The size of the render target used for the current pass.
+		glm::vec4 targetSize;
 
 		// The environment sun direction.
 		glm::vec4 sunDir;
