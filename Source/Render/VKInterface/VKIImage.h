@@ -36,6 +36,7 @@
 
 class VKIDevice;
 class VKIImage;
+class VKIBuffer;
 
 
 
@@ -95,8 +96,15 @@ public:
 	// The Image Layout.
 	inline VkImageLayout GetLayout() const { return mLayout; }
 
+	// The Number of mipmaps levels in this image.
+	inline uint32_t GetMipLevels() const { return mMipLevels; };
+
 	// Transition the image layout to a new one.
 	void TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout newLayout, VkImageAspectFlags aspect);
+
+	// Update image content from buffer.
+	void UpdateImage(VkCommandBuffer cmd, VKIBuffer* buffer);
+
 
 private:
 	// Allocate Device Memory for the created vulkan image.

@@ -24,6 +24,7 @@
 #include "Application.h"
 #include "Core/GISystem.h"
 #include "AppWindow.h"
+#include "AppUser.h"
 #include "Render/Renderer.h"
 #include "Importers/GLTFImporter.h"
 
@@ -81,6 +82,8 @@ void Application::Initialize()
 	mRenderer->Initialize();
 
 	// ...
+	mAppUser = UniquePtr<AppUser>(new AppUser());
+
 	mMainScene = UniquePtr<Scene>( new Scene() );
 	mMainScene->GetCamera().SetAspect(mAppWnd->GetFrameBufferAspect());
 
@@ -88,14 +91,79 @@ void Application::Initialize()
 	mMainScene->ResetView(); // Reset view.
 	mMainScene->GetGlobal().SetSunColor( glm::vec3(1.0f) );
 	mMainScene->GetGlobal().SetSunPower(1.0f);
-	mMainScene->GetGlobal().SetSunDir( glm::normalize(glm::vec3(-1.0f)) );
+	mMainScene->GetGlobal().SetSunDir( glm::normalize(glm::vec3(-1.0f, -1.0f, -3.0f)) );
 
-	//
-	Ptr<LightProbeNode> tmp0(new LightProbeNode());
-	tmp0->SetTranslate(glm::vec3(0.0f, 0.0f, 50.0f));
-	tmp0->SetRadius(1000.0f);
-	tmp0->UpdateRenderLightProbe();
-	mMainScene->AddNode(tmp0);
+
+
+	mMainScene->GetGlobal().isLightProbeEnabled = true;
+	mMainScene->GetGlobal().isLightProbeHelpers = true;
+	mMainScene->GetGlobal().isLightProbeVisualize = true;
+
+
+	// ..............................................................
+	// ..............................................................
+	float h0 = 50.0f;
+	float h1 = 260.0f;
+
+	std::vector<glm::vec4> probesPos = {
+		// Bottom.......... ....................
+		// Middle
+		glm::vec4( 500.0f, 0.0f, h0, 280.0f),
+		glm::vec4( 160.0f, 0.0f, h0, 280.0f),
+		glm::vec4(-200.0f, 0.0f, h0, 280.0f),
+		glm::vec4(-630.0f, 0.0f, h0, 280.0f),
+		
+		// Left
+		glm::vec4( 500.0f, -220.0f, h0, 240.0f),
+		glm::vec4( 160.0f, -220.0f, h0, 240.0f),
+		glm::vec4(-200.0f, -220.0f, h0, 240.0f),
+		glm::vec4(-630.0f, -220.0f, h0, 240.0f),
+
+		// Left
+		glm::vec4( 500.0f, 220.0f, h0, 240.0f),
+		glm::vec4( 160.0f, 220.0f, h0, 240.0f),
+		glm::vec4(-200.0f, 220.0f, h0, 240.0f),
+		glm::vec4(-630.0f, 220.0f, h0, 240.0f),
+		
+		// Top..............................
+		// Middle
+		glm::vec4( 500.0f, 0.0f, h1, 280.0f),
+		glm::vec4( 160.0f, 0.0f, h1, 280.0f),
+		glm::vec4(-200.0f, 0.0f, h1, 280.0f),
+		glm::vec4(-630.0f, 0.0f, h1, 280.0f),
+		
+		// Left
+		glm::vec4( 500.0f, -220.0f, h1, 240.0f),
+		glm::vec4( 160.0f, -220.0f, h1, 240.0f),
+		glm::vec4(-200.0f, -220.0f, h1, 240.0f),
+		glm::vec4(-630.0f, -220.0f, h1, 240.0f),
+
+		// Left
+		glm::vec4( 500.0f, 220.0f, h1, 240.0f),
+		glm::vec4( 160.0f, 220.0f, h1, 240.0f),
+		glm::vec4(-200.0f, 220.0f, h1, 240.0f),
+		glm::vec4(-630.0f, 220.0f, h1, 240.0f),
+	};
+
+
+
+	for (uint32_t i = 0; i < probesPos.size(); ++i)
+	{
+		Ptr<LightProbeNode> tmp0(new LightProbeNode());
+		tmp0->SetTranslate(probesPos[i]);
+		tmp0->SetRadius(probesPos[i].w);
+		tmp0->UpdateRenderLightProbe();
+		mMainScene->AddNode(tmp0);
+	}
+
+
+	// ..............................................................
+	// ..............................................................
+
+
+
+	mAppUser->MatchCamera(mMainScene.get());
+
 
 }
 
@@ -133,7 +201,7 @@ int32_t Application::Run()
 
 
 		GISystem::Sleep(24);
-		LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
+		//LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
 	}
 
 
@@ -161,6 +229,9 @@ void Application::Destroy()
 
 void Application::Update()
 {
+	mAppUser->Update(mDeltaTime, mMainScene.get());
+
+
 	// Update Scene...
 	if (mMainScene)
 	{

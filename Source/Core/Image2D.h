@@ -36,6 +36,14 @@
 
 
 
+
+class RenderImage;
+
+
+
+
+
+
 // Image Formats.
 enum class EImageFormat : uint32_t
 {
@@ -103,10 +111,10 @@ public:
 	inline const uint8_t* GetData() const { return mData; }
 
 	// Return the allocated image data size in bytes.
-	inline uint32_t GetSize() { return mSize; }
+	inline uint32_t GetSize() const { return mSize; }
 
 	// Return true if the image data is allocated and valid.
-	inline bool IsValid() { return mData != nullptr; }
+	inline bool IsValid() const { return mData != nullptr; }
 
 private:
 	// The image data.
@@ -146,6 +154,21 @@ public:
 	// Return the image size.
 	inline const glm::ivec2& GetSize() { return mSize; }
 	
+	// Create/Update render mesh data.
+	void UpdateRenderImage();
+
+	// Return the render mesh.
+	RenderImage* GetRenderImage() { return mRenderImage.get(); }
+	const RenderImage* GetRenderImage() const { return mRenderImage.get(); }
+
+	// Return true if the image is in sRGB color space
+	inline bool IsSRGB() const { return mIsSRGB; }
+
+	// Retrun the image format.
+	inline EImageFormat GetFormat() const { return mFormat; }
+
+	// Return image data.
+	inline const Image2DData& GetImgData() const { return mData; }
 
 private:
 	// The image size.
@@ -155,6 +178,12 @@ private:
 	EImageFormat mFormat;
 
 	// The Image Data.
-	Image2DData data;
+	Image2DData mData;
+
+	// The image render data.
+	UniquePtr<RenderImage> mRenderImage;
+
+	// The image data color space.
+	bool mIsSRGB;
 };
 

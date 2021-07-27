@@ -138,6 +138,7 @@ public:
 
 	// Return the renderer sphere.
 	inline RenderSphere* GetSphere() { return mRSphere.get(); }
+	inline RenderSphere* GetSphereLow() { return mRSphere.get(); }
 
 	// Wait for the queues to be Idle/
 	void WaitForIdle();

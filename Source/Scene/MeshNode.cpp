@@ -50,6 +50,15 @@ void MeshNode::SetMesh(uint32_t index, Ptr<Mesh> mesh)
 }
 
 
+void MeshNode::SetMaterial(uint32_t index, Ptr<Material> mat)
+{
+	if (mMaterials.size() < index + 1)
+		mMaterials.resize(index + 1);
+
+	mMaterials[index] = mat;
+}
+
+
 void MeshNode::UpdateBounds()
 {
 	mBounds.Reset();

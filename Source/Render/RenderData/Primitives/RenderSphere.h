@@ -52,7 +52,7 @@ public:
 	~RenderSphere();
 
 	// Update The Sphere Render Data.
-	void UpdateData();
+	void UpdateData(uint32_t seg);
 
 	// Draw the mesh.
 	virtual void Draw(VKICommandBuffer* cmdBuffer) override;

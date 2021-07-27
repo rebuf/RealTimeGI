@@ -67,6 +67,10 @@ public:
 	// Create/Update render light probe data.
 	void UpdateRenderLightProbe();
 
+	// Set/Get Selected Flag.
+	inline void SetSelected(bool val) { mIsSelected = val; }
+	inline bool IsSelected() { return mIsSelected; }
+
 protected:
 	// Called when the node transform changes.
 	virtual void OnTransform() override;
@@ -77,6 +81,9 @@ private:
 
 	// The render data for this light probe.
 	UniquePtr<RenderLightProbe> mRenderLightProbe;
+
+	// True if the probe current selcted & active.
+	bool mIsSelected;
 };
 
 

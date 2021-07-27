@@ -43,7 +43,11 @@
 #include "VKInterface/VKIGraphicsPipeline.h"
 
 
-
+struct LightProbeConstants
+{
+	glm::vec4 ProbePosition;
+	glm::vec4 Radius;
+} inConstant;
 
 
 	// Construct.
@@ -72,6 +76,8 @@ void RenderStageLightProbes::Initialize(VKIDevice* device, StageRenderTarget hdr
 
 	SetupCaptureCubePass();
 	SetupIrradianceFilter();
+	SetupLightingPass();
+	SetupVisualizePass();
 }
 
 
@@ -81,10 +87,10 @@ void RenderStageLightProbes::Destroy()
 }
 
 
-void RenderStageLightProbes::RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, uint32_t face,
-	const glm::ivec4& viewport)
+void RenderStageLightProbes::RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame,
+	RenderLightProbe* lightProbe, uint32_t face, const glm::ivec4& viewport)
 {
-	mCaptureCubeRenderPass->Begin(cmdBuffer, mCaptureCubeFB.get(), viewport);
+	mCaptureCubeRenderPass->Begin(cmdBuffer, lightProbe->GetRadianceFB(), viewport);
 	mCaptureCubeShader->Bind(cmdBuffer);
 	mCaptureCubeShader->GetDescriptorSet()->Bind(cmdBuffer, frame, mCaptureCubeShader->GetPipeline());
 
@@ -105,9 +111,37 @@ void RenderStageLightProbes::FilterCaptureCube(VKICommandBuffer* cmdBuffer, uint
 {
 	mIrradianceFilterPass->Begin(cmdBuffer, lightProbe->GetIrradianceFB(), viewport);
 	mIrradianceFilter->Bind(cmdBuffer);
-	mIrradianceFilter->GetDescriptorSet()->Bind(cmdBuffer, frame, mIrradianceFilter->GetPipeline());
+	//mIrradianceFilter->GetDescriptorSet()->Bind(cmdBuffer, frame, mIrradianceFilter->GetPipeline());
+
+	lightProbe->GetRadianceDescSet()->Bind(cmdBuffer, frame, mIrradianceFilter->GetPipeline());
+
 	mSphere->Draw(cmdBuffer);
 	mIrradianceFilterPass->End(cmdBuffer);
+}
+
+
+void RenderStageLightProbes::Render(VKICommandBuffer* cmdBuffer, uint32_t frame, 
+	const std::vector<RenderLightProbe*>& lightProbes)
+{
+	mLightingShader->Bind(cmdBuffer);
+
+	for (size_t i = 0; i < lightProbes.size(); ++i)
+	{
+		if (lightProbes[i]->GetDirty() == 2)
+			continue;
+
+		lightProbes[i]->GetLightingDescSet()->Bind(cmdBuffer, frame, mLightingShader->GetPipeline());
+
+		inConstant.ProbePosition = glm::vec4(lightProbes[i]->GetPosition(), 0.0f);
+		inConstant.Radius.x = lightProbes[i]->GetRadius();
+
+		vkCmdPushConstants(cmdBuffer->GetCurrent(), mLightingShader->GetPipeline()->GetLayout(),
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			0, sizeof(LightProbeConstants), &inConstant);
+
+
+		vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
+	}
 }
 
 
@@ -209,7 +243,7 @@ void RenderStageLightProbes::SetupIrradianceFilter()
 
 	// RenderPass...
 	mIrradianceFilterPass = UniquePtr<VKIRenderPass>(new VKIRenderPass());
-	mIrradianceFilterPass->SetColorAttachment(0, VK_FORMAT_R8G8B8A8_UNORM,
+	mIrradianceFilterPass->SetColorAttachment(0, VK_FORMAT_R16G16B16A16_SFLOAT,
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -254,19 +288,104 @@ void RenderStageLightProbes::SetupIrradianceFilter()
 	mIrradianceFilter->Create();
 
 	// Descriptor Set
-	VKIDescriptorSet* descSet = mIrradianceFilter->CreateDescriptorSet();
-	descSet->SetLayout(mIrradianceFilter->GetLayout());
-	descSet->CreateDescriptorSet(mDevice, Renderer::NUM_CONCURRENT_FRAMES);
+	//VKIDescriptorSet* descSet = mIrradianceFilter->CreateDescriptorSet();
+	//descSet->SetLayout(mIrradianceFilter->GetLayout());
+	//descSet->CreateDescriptorSet(mDevice, Renderer::NUM_CONCURRENT_FRAMES);
 
-	descSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-		VK_SHADER_STAGE_ALL, mCommon->GetBuffers());
+	//descSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+	//	VK_SHADER_STAGE_ALL, mCommon->GetBuffers());
 
-	descSet->AddDescriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_GEOMETRY_BIT,
-		mSphere->GetSphereUnifrom()->GetBuffers());
+	//descSet->AddDescriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_GEOMETRY_BIT,
+	//	mSphere->GetSphereUnifrom()->GetBuffers());
 
-	descSet->AddDescriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-		mCaptureCubeTarget.view.get(), mCaptureCubeTarget.sampler.get());
+	//descSet->AddDescriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+	//	mCaptureCubeTarget.view.get(), mCaptureCubeTarget.sampler.get());
 
-	descSet->UpdateSets();
+	//descSet->UpdateSets();
 
+}
+
+
+void RenderStageLightProbes::SetupLightingPass()
+{
+	RendererPipeline* rpipeline = Application::Get().GetRenderer()->GetPipeline();
+
+	// Shader...
+	mLightingShader = UniquePtr<RenderShader>(new RenderShader());
+	mLightingShader->SetDomain(ERenderShaderDomain::Screen);
+	mLightingShader->SetRenderPass(rpipeline->GetLightingPass());
+	mLightingShader->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "ScreenVert.spv");
+	mLightingShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "LightingPass_LightProbe.spv");
+	mLightingShader->SetViewport(glm::ivec4(0, 0, 1920.0, 1080.0));
+	mLightingShader->SetViewportDynamic(true);
+	mLightingShader->SetBlendingEnabled(0, true);
+	mLightingShader->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::OneMinusSrcAlpha,
+		ERenderBlendOp::Add);
+
+	mLightingShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+		ERenderShaderStage::AllStages);
+
+	mLightingShader->AddInput(1, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddInput(2, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddInput(3, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddInput(4, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddInput(6, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddPushConstant(0, 0, sizeof(LightProbeConstants), ERenderShaderStage::Fragment);
+
+	mLightingShader->Create();
+
+
+}
+
+
+void RenderStageLightProbes::SetupVisualizePass()
+{
+	RendererPipeline* rpipeline = Application::Get().GetRenderer()->GetPipeline();
+
+	// Shader...
+	mVisualizeProbeShader = UniquePtr<RenderShader>(new RenderShader());
+	mVisualizeProbeShader->SetDomain(ERenderShaderDomain::Screen);
+	mVisualizeProbeShader->SetRenderPass(rpipeline->GetLightingPass());
+	mVisualizeProbeShader->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "ScreenVert.spv");
+	mVisualizeProbeShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "VisualizePass.spv");
+	mVisualizeProbeShader->SetViewport(glm::ivec4(0, 0, 1920.0, 1080.0));
+	mVisualizeProbeShader->SetViewportDynamic(true);
+	mVisualizeProbeShader->SetBlendingEnabled(0, false);
+
+	mVisualizeProbeShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+		ERenderShaderStage::AllStages);
+
+	mVisualizeProbeShader->AddInput(10, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mVisualizeProbeShader->AddInput(11, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mVisualizeProbeShader->Create();
+
+}
+
+
+void RenderStageLightProbes::RenderVisualize(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe)
+{
+	if (!lightProbe)
+		return;
+
+
+	if (lightProbe->GetDirty() == 2)
+		return;
+
+	mVisualizeProbeShader->Bind(cmdBuffer);
+	lightProbe->GetVisualizeDescSet()->Bind(cmdBuffer, frame, mVisualizeProbeShader->GetPipeline());
+	vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
 }

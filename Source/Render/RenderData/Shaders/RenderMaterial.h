@@ -33,7 +33,13 @@
 class Renderer;
 class RenderShader;
 class RenderUniform;
+class RenderImage;
 class VKIDescriptorSet;
+class VKIImageView;
+class VKISampler;
+class VKICommandBuffer;
+struct MaterialData;
+
 
 
 
@@ -53,6 +59,13 @@ public:
 	// Destruct.
 	~RenderMaterial();
 
+	// Setup the render material.
+	void Setup(MaterialData* data, RenderImage* colorImage, RenderImage* roughnessMetallicImage);
+
+	//
+	void Bind(VKICommandBuffer* cmdBuffer, uint32_t frame);
+
+public:
 	// Setup The material shaders used by the material system.
 	static void SetupMaterialShaders(Renderer* renderer, RenderUniform* transformUniform);
 
@@ -65,6 +78,10 @@ public:
 	static RenderShader* GetLProbeShader(ERenderMaterialType type);
 
 private:
+	//
+	static void SetupSphereHelperShader(Renderer* renderer);
+
+private:
 	// Opaque Material Shader.
 	static Ptr<RenderShader> OPAQUE_SHADER;
 
@@ -72,12 +89,29 @@ private:
 	static Ptr<RenderShader> SHADOW_DIR_SHADER[2];
 	static Ptr<RenderShader> SHADOW_OMNI_SHADER[2];
 
+
+
 public:
-	// Material's Default Descriptor Set. TEMP....
-	static Ptr<VKIDescriptorSet> MAT_DESC_SET[2];
+	// Update Material Uniform Buffer.
+	static Ptr<RenderUniform> MATERAIL_UNIFORM;
+
+	//
+	static Ptr<RenderShader> SPHERE_HELPER_SHADER;
 
 private:
 	// The Shader type.
 	ERenderMaterialType mType;
+
+	// Material Descriptor Set.
+	Ptr<VKIDescriptorSet> mDescriptorSet;
+
+	// Materail Data, used to update the materail unifrom.
+	MaterialData* mMatData;
+
+	// Materail Textures.
+	//  [0] Color Image
+	//  [1] Roughness & Metallic.
+	RenderImage* mTextures[2];
+
 };
 

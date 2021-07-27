@@ -26,6 +26,7 @@
 #include "Application.h"
 #include "AppWindow.h"
 #include "Node.h"
+#include "LightProbeNode.h"
 
 
 
@@ -34,6 +35,7 @@
 Scene::Scene()
 	: mHasStarted(false)
 	, mIsDestroyed(false)
+	, mSelectedLight(nullptr)
 {
 
 }
@@ -201,10 +203,7 @@ void Scene::RemoveLight(Node* node)
 
 void Scene::ResetView()
 {
-	Box bounds;
-	for (size_t i = 0; i < mSceneNodes.size(); ++i)
-		bounds.Add( mSceneNodes[i].node->GetBounds() );
-
+	Box bounds = ComputeBounds();
 	if (!bounds.IsValid())
 	{
 		mCamera.SetViewTarget(glm::vec3(0.0f));
@@ -212,10 +211,54 @@ void Scene::ResetView()
 		return;
 	}
 
+
 	glm::vec3 center = bounds.Center();
 	glm::vec3 offset = bounds.Extent();
 
 	mCamera.SetViewTarget(center - glm::vec3(0.0f, 0.0f, 100.0f));
 	mCamera.SetViewPos(center + glm::vec3(-550.0f, -50.0f, 70.0f));
 	mCamera.RecomputeUp();
+}
+
+
+Box Scene::ComputeBounds()
+{
+	Box bounds;
+
+	for (size_t i = 0; i < mSceneNodes.size(); ++i)
+		bounds.Add(mSceneNodes[i].node->GetBounds());
+
+	return bounds;
+}
+
+
+void Scene::SetSelectedLight(Node* node)
+{
+	UnselectLight();
+	mSelectedLight = node;
+
+	if (!mSelectedLight)
+		return;
+
+	if (mSelectedLight->GetType() == ENodeType::LightProbe)
+	{
+		LightProbeNode* probe = static_cast<LightProbeNode*>(mSelectedLight);
+		probe->SetSelected(true);
+	}
+}
+
+
+void Scene::UnselectLight()
+{
+	if (!mSelectedLight)
+		return;
+
+	if (mSelectedLight->GetType() == ENodeType::LightProbe)
+	{
+		LightProbeNode* probe = static_cast<LightProbeNode*>(mSelectedLight);
+		probe->SetSelected(false);
+	}
+
+
+	mSelectedLight = nullptr;
 }

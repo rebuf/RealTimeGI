@@ -51,6 +51,7 @@ class VKIRenderPass;
 class VKIImageView;
 class VKISampler;
 class VKICommandBuffer;
+class VKIDescriptorSet;
 
 
 
@@ -68,6 +69,14 @@ struct RendererPipelineUniform
 
 
 
+
+
+//
+enum class ERenderSceneStage : uint32_t
+{
+	Normal,
+	LightProbe,
+};
 
 
 
@@ -126,6 +135,13 @@ public:
 	// Returm LightProbes renderer stage.
 	inline RenderStageLightProbes* GetStageLightProbes() const { return mStageLightProbes.get(); }
 
+	// Returm the lighting passe.
+	inline VKIRenderPass* GetLightingPass() const { return mLightingPass.get(); }
+	inline RenderShader* GetSunLightingShader() const { return mLightingShader.get(); }
+
+	// Add GBuffer targets binding to a descriptor set.
+	void AddGBufferToDescSet(VKIDescriptorSet* descSet);
+
 private:
 	// Setup/Create the renderer pipeline uniforms.
 	void SetupUniforms();
@@ -155,7 +171,8 @@ private:
 	void UpdateLightProbes(VKICommandBuffer* cmdBuffer);
 
 	// The stage for rendering the scene, the scene is rendered into the 
-	void RenderSceneStage(VKICommandBuffer* cmdBuffer);
+	void RenderSceneStage(VKICommandBuffer* cmdBuffer, ERenderSceneStage stage);
+
 
 private:
 	// The vulkan device.

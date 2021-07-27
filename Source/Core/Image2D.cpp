@@ -22,6 +22,7 @@
 
 
 #include "Image2D.h"
+#include "Render/RenderData/RenderImage.h"
 
 
 // Disable compilers warnings caused by stb_image.
@@ -66,6 +67,7 @@ void GetImgPixelInfo(EImageFormat format, int32_t& outBPP)
 
 Image2D::Image2D()
 	: mFormat(EImageFormat::None)
+	, mIsSRGB(true)
 {
 
 }
@@ -86,14 +88,14 @@ void Image2D::Allocate(EImageFormat format, const glm::ivec2& size)
 	GetImgPixelInfo(format, BPP);
 
 	int32_t sizeBytes = (BPP >> 3) * size.x * size.y;
-	data.Allocate(sizeBytes);
+	mData.Allocate(sizeBytes);
 }
 
 
 void Image2D::Reset()
 {
 	// Free data.
-	data.Reset();
+	mData.Reset();
 
 
 }
@@ -124,7 +126,7 @@ bool Image2D::LoadImage(const std::string& imgFile)
 
 	// Allocate & Copy
 	Allocate(mFormat, glm::ivec2(imgWidth, imgHeight));
-	data.CopyData(0, data.GetSize(), pixels);
+	mData.CopyData(0, mData.GetSize(), pixels);
 
 	// Free Loaded Image.
 	stbi_image_free(pixels);
@@ -137,4 +139,13 @@ bool Image2D::SaveImage(const std::string& imgFile)
 {
 	CHECK(0 && "Not supported yet.");
 	return false;
+}
+
+
+void Image2D::UpdateRenderImage()
+{
+	mRenderImage = UniquePtr<RenderImage>(new RenderImage());
+	mRenderImage->SetData(this);
+	mRenderImage->CreateView();
+	mRenderImage->CreateSampler();
 }

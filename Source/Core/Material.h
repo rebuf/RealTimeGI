@@ -25,68 +25,83 @@
 
 
 
-
 #include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
-
-
-#include <vector>
+#include "glm/vec2.hpp"
+#include "glm/vec4.hpp"
 
 
 
 
-class Mesh;
-class Material;
+class RenderMaterial;
+class Image2D;
 
 
 
 
 
-// MeshNode:
-//   - Node that represent a mesh in the scene.
-//
-class MeshNode : public Node
+// Basic Material Data.
+struct MaterialData
 {
-public:
-	// Construct.
-	MeshNode();
+	// The Base Color.
+	glm::vec4 color;
 
-	// Destruct.
-	~MeshNode();
-
-	// Set the mesh of this mesh node.
-	void SetMesh(uint32_t index, Ptr<Mesh> mesh);
-
-	// Return this mesh MeshNode.
-	inline Mesh* GetMesh(uint32_t index) const { return mMeshes[index].get(); }
-
-	// Return the number of meshes in this mesh node.
-	uint32_t GetNumMeshes() const { return (uint32_t)mMeshes.size(); }
-
-	// Return the mesh node bounds.
-	virtual Box GetBounds() const override;
-
-	// Set the mesh of this mesh node.
-	void SetMaterial(uint32_t index, Ptr<Material> mat);
-
-	// Return this mesh MeshNode.
-	inline Material* GetMaterial(uint32_t index) const { return mMaterials[index].get(); }
-
-private:
-	// Update nodes bounds.
-	void UpdateBounds();
-
-private:
-	// The Meshs.
-	std::vector< Ptr<Mesh> > mMeshes;
-
-	// The Materails.
-	std::vector< Ptr<Material> > mMaterials;
-
-	// The mesh bounds in world coordinate.
-	Box mBounds;
+	// x[Roughness], y[Metallic].
+	glm::vec4 brdf;
 
 };
 
+
+
+
+
+
+// Material:
+//    - 
+class Material
+{
+public:
+	// Construct.
+	Material();
+
+	// Destruct.
+	~Material();
+
+	// Set/Get Material Base Color.
+	void SetColor(const glm::vec4& value);
+	const glm::vec4& GetColor();
+
+	// Set/Get Material Color Texture.
+	void SetColorTexture(Ptr<Image2D> img);
+	Ptr<Image2D> GetColorTexture();
+
+	// Set/Get Material Roughness Metallic Texture.
+	void SetRoughnessMetallic(Ptr<Image2D> img);
+	Ptr<Image2D> GetRoughnessMetallic();
+
+	// Retrun true if the material is dirty and need updating.
+	inline bool IsDirty() const { return mIsDirty; }
+
+	// If true update the material render data.
+	void UpdateRenderMaterial();
+
+	// Return render materail.
+	RenderMaterial* GetRenderMaterial() { return mRenderMaterial.get(); }
+
+private:
+	// Materail Data.
+	MaterialData mData;
+
+	// Color Texture.
+	Ptr<Image2D> mColorTexture;
+
+	// Roughness Metallic Texture.
+	Ptr<Image2D> mRoughnessMetallic;
+
+	// If true the materail need to be updated.
+	bool mIsDirty;
+
+	// Render Material Data.
+	UniquePtr<RenderMaterial> mRenderMaterial;
+
+};
 

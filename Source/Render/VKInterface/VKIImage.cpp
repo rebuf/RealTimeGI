@@ -23,6 +23,7 @@
 
 #include "VKIImage.h"
 #include "VKIDevice.h"
+#include "VKIBuffer.h"
 
 
 
@@ -286,6 +287,29 @@ void VKIImage::ComputePipelineStage(VkImageLayout newLayout, VkImageMemoryBarrie
 	}
 
 }
+
+
+void VKIImage::UpdateImage(VkCommandBuffer cmd, VKIBuffer* buffer)
+{
+	VkBufferImageCopy region{};
+	region.bufferOffset = 0;
+	region.bufferRowLength = 0;
+	region.bufferImageHeight = 0;
+	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.mipLevel = 0;
+	region.imageSubresource.baseArrayLayer = 0;
+	region.imageSubresource.layerCount = mLayers;
+	region.imageOffset = { 0, 0, 0 };
+	region.imageExtent = mSize;
+
+	vkCmdCopyBufferToImage(cmd,
+		buffer->Get(), mHandle,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		1, &region);
+
+}
+
+
 
 
 

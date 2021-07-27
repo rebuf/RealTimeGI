@@ -216,6 +216,9 @@
     <ClInclude Include="Source\Render\RenderData\Primitives\RenderSphere.h">
       <Filter>Source Files\Render\RenderData\Primitives</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Core\Material.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\Frustum.cpp">
@@ -356,6 +359,9 @@
     <ClCompile Include="Source\Render\RenderData\Primitives\RenderSphere.cpp">
       <Filter>Source Files\Render\RenderData\Primitives</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Core\Material.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\FinalBlit.glsl">
@@ -396,6 +402,12 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\SphereGeom.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\SphereFrag.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizePass.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

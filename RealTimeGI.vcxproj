@@ -20,6 +20,7 @@
     <ClInclude Include="Source\Core\Delegate.h" />
     <ClInclude Include="Source\Core\Frustum.h" />
     <ClInclude Include="Source\Core\Image2D.h" />
+    <ClInclude Include="Source\Core\Material.h" />
     <ClInclude Include="Source\Core\Mesh.h" />
     <ClInclude Include="Source\Core\GISystem.h" />
     <ClInclude Include="Source\Core\Transform.h" />
@@ -75,6 +76,7 @@
     <ClCompile Include="Source\Core\Core.cpp" />
     <ClCompile Include="Source\Core\Frustum.cpp" />
     <ClCompile Include="Source\Core\Image2D.cpp" />
+    <ClCompile Include="Source\Core\Material.cpp" />
     <ClCompile Include="Source\Core\Mesh.cpp" />
     <ClCompile Include="Source\Core\GISystem.cpp" />
     <ClCompile Include="Source\Core\Transform.cpp" />
@@ -129,8 +131,10 @@
     <None Include="Resources\Shaders\MeshVert.glsl" />
     <None Include="Resources\Shaders\PostProcess.glsl" />
     <None Include="Resources\Shaders\ScreenVert.glsl" />
+    <None Include="Resources\Shaders\SphereFrag.glsl" />
     <None Include="Resources\Shaders\SphereGeom.glsl" />
     <None Include="Resources\Shaders\SphereVert.glsl" />
+    <None Include="Resources\Shaders\VisualizePass.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

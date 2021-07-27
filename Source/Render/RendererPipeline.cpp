@@ -181,7 +181,7 @@ void RendererPipeline::Render(VKICommandBuffer* cmdBuffer)
 	CHECK(mIsRendering);
 
 	// Update shadow maps if needed...
-	//UpdateShadows(cmdBuffer);
+	UpdateShadows(cmdBuffer);
 	
 	// Update light probes if needed...
 	UpdateLightProbes(cmdBuffer);
@@ -197,13 +197,9 @@ void RendererPipeline::Render(VKICommandBuffer* cmdBuffer)
 	vkCmdSetScissor(cmdBuffer->GetCurrent(), 0, 1, &scissor);
 
 
-	// Testing............................................................
-	return;
-
-
 	// --- -- - -- ---
 	// The Scene.
-	RenderSceneStage(cmdBuffer);
+	RenderSceneStage(cmdBuffer, ERenderSceneStage::Normal);
 
 
 
@@ -228,13 +224,13 @@ void RendererPipeline::FinalToSwapchain(VKICommandBuffer* cmdBuffer, uint32_t im
 	mBlitSwapchain->GetDescriptorSet()->Bind(cmdBuffer, mFrame, mBlitSwapchain->GetPipeline());
 	
 	// Testing............................................................
-	//vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
+	vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
 
 	mSwapchain->GetRenderPass()->End(cmdBuffer);
 }
 
 
-void RendererPipeline::RenderSceneStage(VKICommandBuffer* cmdBuffer)
+void RendererPipeline::RenderSceneStage(VKICommandBuffer* cmdBuffer, ERenderSceneStage stage)
 {
 
 	// G-Buffer Pass...
@@ -249,11 +245,41 @@ void RendererPipeline::RenderSceneStage(VKICommandBuffer* cmdBuffer)
 	// Lighting Pass...
 	{
 		mLightingPass->Begin(cmdBuffer, mLightingFB.get(), mIntViewport);
+
+		// render light probes in the scene.
+		mStageLightProbes->Render(cmdBuffer, mFrame, mScene->GetLightProbes());
+
+		// Sun Light
 		mLightingShader->Bind(cmdBuffer);
-		mLightingShader->GetDescriptorSet()->Bind(cmdBuffer, mFrame, mLightingShader->GetPipeline());
+		mScene->GetSunLightDescSet()->Bind(cmdBuffer, mFrame, mLightingShader->GetPipeline());
+
+		RenderDirShadow* shadow = mScene->GetSunShadow();
+		glm::mat4 shadowMatrix = shadow->GetShadowMatrix();
+
+		vkCmdPushConstants(cmdBuffer->GetCurrent(),
+			mLightingShader->GetPipeline()->GetLayout(),
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			0, sizeof(glm::mat4), &shadowMatrix);
+
 		vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
+
+
+		// Draw Helpers...
+		if (stage == ERenderSceneStage::Normal)
+		{
+			mScene->DrawHelpers(cmdBuffer, mFrame);
+
+			if (mScene->GetEnvironment().isLightProbeVisualize)
+			{
+				mStageLightProbes->RenderVisualize(cmdBuffer, mFrame, mScene->mSelectedLightProbe);
+			}
+		}
+
 		mLightingPass->End(cmdBuffer);
 	}
+
+
+
 
 }
 
@@ -307,55 +333,43 @@ void RendererPipeline::UpdateLightProbes(VKICommandBuffer* cmdBuffer)
 	for (RenderLightProbe* probe : lightProbes)
 	{
 		// Need Update?
-		if (!probe->IsDirty())
+		if (!probe->GetDirty() != 0)
 			continue;
 
-		mStageLightProbes->GetCaptureCube()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+		//mStageLightProbes->GetCaptureCube()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+		probe->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		// Capture the scene for each cubemap face.
 		for (uint32_t iface = 0; iface < 6; ++iface)
 		{
 
 			glm::mat4 probeFaceViewProj = Transform::GetCubeViewProj(iface, probe->GetPosition());
+			glm::mat4 probeFaceViewProjInverse = glm::inverse(probeFaceViewProj);
 
 			mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
 				offsetof(GUniform::CommonBlock, viewProjMatrix), sizeof(glm::mat4), glm::value_ptr(probeFaceViewProj));
 
-			// G-Buffer Pass...
-			{
-				mGBufferPass->Begin(cmdBuffer, mGBufferFB.get(), riViewport);
-				mScene->DrawSceneDeferred(cmdBuffer, mFrame);
-				mGBufferPass->End(cmdBuffer);
-			}
+			mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
+				offsetof(GUniform::CommonBlock, viewProjMatrixInverse), sizeof(glm::mat4), glm::value_ptr(probeFaceViewProjInverse));
 
-
-			// Lighting Pass...
-			{
-				mLightingPass->Begin(cmdBuffer, mLightingFB.get(), riViewport);
-				mLightingShader->Bind(cmdBuffer);
-				mLightingShader->GetDescriptorSet()->Bind(cmdBuffer, mFrame, mLightingShader->GetPipeline());
-				vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
-				mLightingPass->End(cmdBuffer);
-			}
+			// Render The Scene for light probe stae.
+			RenderSceneStage(cmdBuffer, ERenderSceneStage::LightProbe);
 
 			// Render the captured scene into the cubemap.
-			mStageLightProbes->RenderCaptureCube(cmdBuffer, mFrame, iface, riViewport);
+			mStageLightProbes->RenderCaptureCube(cmdBuffer, mFrame, probe, iface, riViewport);
 		}
 
-		mStageLightProbes->GetCaptureCube()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+		//mStageLightProbes->GetCaptureCube()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+		probe->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
 
 		// Pre-Filter cube map and store it into the probe images to be used later for lighting.
 		mStageLightProbes->FilterCaptureCube(cmdBuffer, mFrame, probe, riViewport);
-
-
-		// Clear Dirty Flag.
-		// Testing..................................................................
-		probe->SetDirty(false);
 	}
 
-
-
+	// Clear Dirty Flag.
+	for (RenderLightProbe* probe : lightProbes)
+		probe->SetDirty(probe->GetDirty() - 1);
 
 
 	// Reset Common Block Uniform...
@@ -620,7 +634,7 @@ void RendererPipeline::SetupLightingPass()
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_ATTACHMENT_LOAD_OP_DONT_CARE, true);
+		VK_ATTACHMENT_LOAD_OP_CLEAR, true);
 
 	mLightingPass->AddDependency(VK_SUBPASS_EXTERNAL, 0,
 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
@@ -639,6 +653,11 @@ void RendererPipeline::SetupLightingPass()
 	mLightingPass->CreateRenderPass(mDevice);
 
 
+
+	std::vector<VkClearValue> clearValues(1);
+	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+	mLightingPass->SetClearValues(clearValues);
+
 	// Framebuffer...
 	mLightingFB = UniquePtr<VKIFramebuffer>(new VKIFramebuffer());
 	mLightingFB->SetImgView(0, mHDRTarget[0].view.get());
@@ -651,10 +670,11 @@ void RendererPipeline::SetupLightingPass()
 	mLightingShader->SetDomain(ERenderShaderDomain::Screen);
 	mLightingShader->SetRenderPass(mLightingPass.get());
 	mLightingShader->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "ScreenVert.spv");
-	mLightingShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "LightingPass.spv");
+	mLightingShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "LightingPass_Sun.spv");
 	mLightingShader->SetViewport(glm::ivec4(0, 0, size.width, size.height));
 	mLightingShader->SetViewportDynamic(true);
-	mLightingShader->SetBlendingEnabled(0, false);
+	mLightingShader->SetBlendingEnabled(0, true);
+	mLightingShader->SetBlending(0, ERenderBlendFactor::One, ERenderBlendFactor::One, ERenderBlendOp::Add);
 
 	mLightingShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
 		ERenderShaderStage::AllStages);
@@ -671,31 +691,12 @@ void RendererPipeline::SetupLightingPass()
 	mLightingShader->AddInput(4, ERenderShaderInputType::ImageSampler,
 		ERenderShaderStage::Fragment);
 
+	mLightingShader->AddInput(5, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddPushConstant(0, 0, sizeof(glm::mat4), ERenderShaderStage::Fragment);
+
 	mLightingShader->Create();
-
-
-	// Descriptors...
-	VKIDescriptorSet* lightingDescSet = mLightingShader->CreateDescriptorSet();
-	lightingDescSet->SetLayout(mLightingShader->GetLayout());
-	lightingDescSet->CreateDescriptorSet(mDevice, Renderer::NUM_CONCURRENT_FRAMES);
-
-	lightingDescSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-		VK_SHADER_STAGE_ALL, mUniforms.common->GetBuffers());
-
-	lightingDescSet->AddDescriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-		VK_SHADER_STAGE_FRAGMENT_BIT, mAlbedoTarget.view.get(), mAlbedoTarget.sampler.get());
-
-	lightingDescSet->AddDescriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-		VK_SHADER_STAGE_FRAGMENT_BIT, mBRDFTarget.view.get(), mBRDFTarget.sampler.get());
-
-	lightingDescSet->AddDescriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-		VK_SHADER_STAGE_FRAGMENT_BIT, mNormalsTarget.view.get(), mNormalsTarget.sampler.get());
-
-	lightingDescSet->AddDescriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-		VK_SHADER_STAGE_FRAGMENT_BIT, mDepthTarget.view.get(), mDepthTarget.sampler.get());
-
-	lightingDescSet->UpdateSets();
-
 }
 
 
@@ -834,4 +835,23 @@ void RendererPipeline::SetupShadowPasses()
 	// Omni-directional Shadow Pass...
 
 
+}
+
+
+void RendererPipeline::AddGBufferToDescSet(VKIDescriptorSet* descSet)
+{
+	descSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		VK_SHADER_STAGE_ALL, mUniforms.common->GetBuffers());
+
+	descSet->AddDescriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		VK_SHADER_STAGE_FRAGMENT_BIT, mAlbedoTarget.view.get(), mAlbedoTarget.sampler.get());
+
+	descSet->AddDescriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		VK_SHADER_STAGE_FRAGMENT_BIT, mBRDFTarget.view.get(), mBRDFTarget.sampler.get());
+
+	descSet->AddDescriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		VK_SHADER_STAGE_FRAGMENT_BIT, mNormalsTarget.view.get(), mNormalsTarget.sampler.get());
+
+	descSet->AddDescriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		VK_SHADER_STAGE_FRAGMENT_BIT, mDepthTarget.view.get(), mDepthTarget.sampler.get());
 }

@@ -99,7 +99,7 @@ void Renderer::Initialize()
 
 	// The Renderer Sphere.
 	mRSphere = UniquePtr<RenderSphere>(new RenderSphere());
-	mRSphere->UpdateData();
+	mRSphere->UpdateData(32);
 
 	// The Renderer Pipeline.
 	mPipeline = UniquePtr<RendererPipeline>(new RendererPipeline());
@@ -117,6 +117,9 @@ void Renderer::Initialize()
 
 void Renderer::Destroy()
 {
+	//
+	mRSphere.reset();
+
 	// Destroy Material Shaders.
 	RenderMaterial::DestroyMaterialShaders();
 

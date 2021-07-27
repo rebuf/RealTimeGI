@@ -69,6 +69,9 @@ public:
 		: mSunDir(0.0f)
 		, mSunColor(1.0f)
 		, mSunPower(1.0f)
+		, isLightProbeEnabled(false)
+		, isLightProbeHelpers(false)
+		, isLightProbeVisualize(false)
 	{
 
 	}
@@ -107,4 +110,11 @@ private:
 
 	// The global settings dirty flags.
 	ESceneGlobalDirtyFlag mDirtyFlags;
+
+public:
+	//
+	bool isLightProbeEnabled;
+	bool isLightProbeHelpers;
+	bool isLightProbeVisualize;
+
 };

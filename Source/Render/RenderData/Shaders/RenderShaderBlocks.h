@@ -38,6 +38,15 @@
 
 
 
+#define COMMON_MODE_NONE 0
+#define COMMON_MODE_REF_CAPTURE 1
+
+
+
+
+
+
+
 
 namespace GUniform
 {
@@ -75,6 +84,9 @@ namespace GUniform
 
 		// Application Time.
 		float time;
+
+		// Mode used to identify the current rendering stage.
+		int32_t mode;
 	};
 
 
@@ -87,6 +99,15 @@ namespace GUniform
 
 		// Light Position, for Omni-Shadows.
 		glm::vec4 lightPos;
+	};
+
+
+	// Data used for shadow pass.
+	struct SphereHelperBlock
+	{
+		glm::vec4 position;
+		glm::vec4 scale;
+		glm::vec4 color;
 	};
 
 

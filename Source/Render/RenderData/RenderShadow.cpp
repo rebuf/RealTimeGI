@@ -82,6 +82,7 @@ void RenderDirShadow::Create()
 	mSampler = UniquePtr<VKISampler>(new VKISampler());
 	mSampler->SetAddressMode(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 	mSampler->SetFilter(VK_FILTER_NEAREST, VK_FILTER_NEAREST);
+	mSampler->SetCompare(false, VK_COMPARE_OP_LESS);
 	mSampler->CreateSampler(device);
 
 	// Framebuffer.

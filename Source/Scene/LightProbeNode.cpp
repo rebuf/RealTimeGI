@@ -34,6 +34,7 @@
 
 LightProbeNode::LightProbeNode()
 	: mRadius(100.0f)
+	, mIsSelected(false)
 {
 	mType = ENodeType::LightProbe;
 
@@ -82,7 +83,7 @@ void LightProbeNode::UpdateRenderLightProbe()
 	mRenderLightProbe = UniquePtr<RenderLightProbe>(new RenderLightProbe());
 	mRenderLightProbe->Create();
 
-	mRenderLightProbe->SetDirty(true);
+	mRenderLightProbe->SetDirty(2);
 	mRenderLightProbe->SetRadius(mRadius);
 	mRenderLightProbe->SetPosition(GetTransform().GetTranslate());
 

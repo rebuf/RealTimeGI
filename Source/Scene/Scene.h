@@ -26,6 +26,7 @@
 
 
 #include "Core/Core.h"
+#include "Core/Box.h"
 #include "SceneGlobalSettings.h"
 #include "Camera.h"
 
@@ -112,6 +113,15 @@ public:
 	// Reset camera view to look at the entire scene.
 	void ResetView();
 
+	// Compute Scene Bounding Box.
+	Box ComputeBounds();
+
+	//
+	void SetSelectedLight(Node* node);
+
+	//
+	void UnselectLight();
+
 private:
 	// Register node to the scene and based on its type
 	void RegisterNode(Node* node);
@@ -126,7 +136,6 @@ private:
 	// Add/Remove node from Lights list.
 	void AddLight(Node* node);
 	void RemoveLight(Node* node);
-
 
 private:
 	// All the nodes in the scene.
@@ -149,6 +158,9 @@ private:
 
 	// Global Settings.
 	SceneGlobalSettings mGlobal;
+
+	//
+	Node* mSelectedLight;
 };
 
 

@@ -38,9 +38,12 @@ class RenderUniform;
 class IRenderShadow;
 class RenderDirShadow;
 class RenderLightProbe;
+class RenderMaterial;
+class RenderSphere;
 class VKICommandBuffer;
 class VKIImage;
 class VKIFramebuffer;
+class VKIDescriptorSet;
 
 
 
@@ -55,7 +58,22 @@ struct RDScenePrimitive
 
 	// Primitive World Transform.
 	glm::mat4 transform;
+
+	// The Primitive Materail.
+	RenderMaterial* materail;
 };
+
+
+
+// Primitive Helper
+struct RDScenePrimitiveHelper
+{
+	IRenderPrimitives* primitive;
+	glm::vec4 position;
+	glm::vec4 scale;
+	glm::vec4 color;
+};
+
 
 
 
@@ -69,6 +87,11 @@ struct RDEnvironment
 
 	// The Sun Color(RGB) & Power(A).
 	glm::vec4 sunColorAndPower;
+
+	//
+	bool isLightProbeEnabled;
+	bool isLightProbeHelpers;
+	bool isLightProbeVisualize;
 
 	// Reset the environment data.
 	void Reset();
@@ -110,6 +133,9 @@ public:
 	// Draw the scene for shadow pass.
 	void DrawSceneShadow(VKICommandBuffer* cmdBuffer, uint32_t frame, IRenderShadow* shadow);
 
+	//
+	void DrawHelpers(VKICommandBuffer* cmdBuffer, uint32_t frame);
+
 	// Return Render Environment.
 	inline RDEnvironment GetEnvironment() const { return mEnvironment; }
 
@@ -140,9 +166,16 @@ public:
 	// Return the light probes in the render scene.
 	inline const std::vector<RenderLightProbe*>& GetLightProbes() const { return mLightProbes; }
 
+	// Return lighting descriptor set used for sun lighting shader.
+	VKIDescriptorSet* GetSunLightDescSet() const { return mSunLightingSet.get(); }
+
 private:
 	// Add new primitive to be rendered by the scene.
 	RDScenePrimitive* AddNewPrimitive(IRenderPrimitives* primitive, const glm::mat4& transform);
+
+	// Add new primitive helper to be rendered by the scene.
+	RDScenePrimitiveHelper* AddNewHelper(IRenderPrimitives* primitive, const glm::vec4& pos, const glm::vec4& scale,
+		const glm::vec4& color);
 
 	// Collect the view data from the scene.
 	void CollectSceneView(Scene* scene);
@@ -153,12 +186,16 @@ private:
 	// Collect render data from nodes.
 	void TraverseScene(Scene* scene);
 
+	// Create the sun render data.
+	void CreateSunData();
+
 private:
 	// The scene we want to render.
 	Scene* mScene;
 
 	// List of all primitive that will be drawn in the scene.
 	std::vector<RDScenePrimitive*> mPrimitives;
+	std::vector<RDScenePrimitiveHelper*> mPrimitivesHelpers;
 
 	// The scene global environment data
 	RDEnvironment mEnvironment;
@@ -189,4 +226,15 @@ private:
 
 	// This render scene include a light probe that needs to be updated.
 	bool mHasDirtyLightProbe;
+
+	// Descriptor Set for sun lighting pass.
+	UniquePtr<VKIDescriptorSet> mSunLightingSet;
+
+	//
+	UniquePtr<RenderSphere> mRSphere;
+
+public:
+	// 
+	RenderLightProbe* mSelectedLightProbe;
+
 };

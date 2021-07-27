@@ -121,6 +121,8 @@ private:
 	// The application's renderer.
 	UniquePtr<Renderer> mRenderer;
 
+	//
+	UniquePtr<AppUser> mAppUser;
 };
 
 

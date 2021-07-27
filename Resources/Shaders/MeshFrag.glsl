@@ -58,6 +58,22 @@ layout( push_constant ) uniform Constant
 
 
 
+// ....
+layout(binding=3) uniform MaterailBlock
+{
+	// The Base Color.
+	vec4 Color;
+
+	// x[Roughness], y[Metallic].
+	vec4 BRDF;
+
+} inMaterial;
+
+
+layout(binding=4) uniform sampler2D ColorTexture;
+layout(binding=5) uniform sampler2D MetallicRoughnessTexture; // Metallic (B), Roughness(G)
+
+
 
 
 // Output...
@@ -80,8 +96,8 @@ void main()
 	float LDist = length(inShadow.LightPos.xyz - inFrag.Position);
 	gl_FragDepth = LDist;
 #else
-	FragAlbedo = vec4(1.0);
-	FragBRDF = vec4(1.0);
+	FragAlbedo = texture(ColorTexture, inFrag.TexCoord);
+	FragBRDF.rg = texture(MetallicRoughnessTexture, inFrag.TexCoord).gb;
 	FragNormal = vec4(inFrag.Normal, 1.0);
 #endif
 }

@@ -23,13 +23,20 @@
 #include "RenderMaterial.h"
 #include "Render/Renderer.h"
 #include "Render/RendererPipeline.h"
+#include "Render/RenderData/RenderImage.h"
 #include "RenderShader.h"
 #include "RenderUniform.h"
 #include "RenderShaderBlocks.h"
 
 
+#include "Application.h"
+#include "Core/Material.h"
+
+
 #include "Render/VKInterface/VKISwapChain.h"
 #include "Render/VKInterface/VKIDescriptor.h"
+#include "Render/VKInterface/VKICommandBuffer.h"
+#include "Render/VKInterface/VKIGraphicsPipeline.h"
 
 
 
@@ -37,7 +44,11 @@
 Ptr<RenderShader> RenderMaterial::OPAQUE_SHADER;
 Ptr<RenderShader> RenderMaterial::SHADOW_DIR_SHADER[2];
 Ptr<RenderShader> RenderMaterial::SHADOW_OMNI_SHADER[2];
-Ptr<VKIDescriptorSet> RenderMaterial::MAT_DESC_SET[2];
+Ptr<RenderUniform> RenderMaterial::MATERAIL_UNIFORM;
+
+Ptr<RenderShader> RenderMaterial::SPHERE_HELPER_SHADER;
+
+
 
 
 
@@ -66,8 +77,16 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 		OPAQUE_SHADER->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
 			ERenderShaderStage::AllStages);
 
+		OPAQUE_SHADER->AddInput(3, ERenderShaderInputType::Uniform, ERenderShaderStage::Fragment);
+		OPAQUE_SHADER->AddInput(4, ERenderShaderInputType::ImageSampler, ERenderShaderStage::Fragment);
+		OPAQUE_SHADER->AddInput(5, ERenderShaderInputType::ImageSampler, ERenderShaderStage::Fragment);
+
 		OPAQUE_SHADER->Create();
 
+
+		MATERAIL_UNIFORM = Ptr<RenderUniform>(new RenderUniform());
+		MATERAIL_UNIFORM->SetTransferDst(true);
+		MATERAIL_UNIFORM->Create(renderer, sizeof(MaterialData), false);
 	}
 
 
@@ -92,6 +111,14 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 		SHADOW_DIR_SHADER[0]->Create();
 
 
+		VKIDescriptorSet* SHADOW_DIR_DESCSET = SHADOW_DIR_SHADER[0]->CreateDescriptorSet();
+		SHADOW_DIR_DESCSET->SetLayout(SHADOW_DIR_SHADER[0]->GetLayout());
+		SHADOW_DIR_DESCSET->CreateDescriptorSet(renderer->GetVKDevice(), Renderer::NUM_CONCURRENT_FRAMES);
+		SHADOW_DIR_DESCSET->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_ALL, commonUniform->GetBuffers());
+		SHADOW_DIR_DESCSET->UpdateSets();
+
+
 		// Omni shadow for opaque. 
 		SHADOW_OMNI_SHADER[0] = Ptr<RenderShader>(new RenderShader());
 		SHADOW_OMNI_SHADER[0]->SetDomain(ERenderShaderDomain::Mesh);
@@ -113,23 +140,59 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 
 
 
+	// ...
+	SetupSphereHelperShader(renderer);
+
+}
+
+
+void RenderMaterial::SetupSphereHelperShader(Renderer* renderer)
+{
+	VkExtent2D swExtent = renderer->GetVKSwapChain()->GetExtent();
+	RenderUniform* commonUniform = renderer->GetPipeline()->GetUniforms().common.get();
+
+	// Shader...
+	SPHERE_HELPER_SHADER = UniquePtr<RenderShader>(new RenderShader());
+	SPHERE_HELPER_SHADER->SetDomain(ERenderShaderDomain::Mesh);
+	SPHERE_HELPER_SHADER->SetRenderPass(renderer->GetPipeline()->GetLightingPass());
+	SPHERE_HELPER_SHADER->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "SphereVert_Helper.spv");
+	SPHERE_HELPER_SHADER->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "SphereFrag_Helper.spv");
+	SPHERE_HELPER_SHADER->SetViewport(glm::ivec4(0, 0, swExtent.width, swExtent.height));
+	SPHERE_HELPER_SHADER->SetViewportDynamic(true);
+	SPHERE_HELPER_SHADER->SetWireframe(true);
+	SPHERE_HELPER_SHADER->SetBlendingEnabled(0, false);
+
+	SPHERE_HELPER_SHADER->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+		ERenderShaderStage::AllStages);
+
+	SPHERE_HELPER_SHADER->AddInput(1, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	SPHERE_HELPER_SHADER->AddInput(2, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	SPHERE_HELPER_SHADER->AddInput(3, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	SPHERE_HELPER_SHADER->AddInput(4, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	SPHERE_HELPER_SHADER->AddPushConstant(0, 0, sizeof(GUniform::SphereHelperBlock), 
+		ERenderShaderStage::Vertex | ERenderShaderStage::Fragment);
+
+
+	SPHERE_HELPER_SHADER->Create();
+
 	// Descriptor Set
-	{
-		MAT_DESC_SET[0] = Ptr<VKIDescriptorSet>(new VKIDescriptorSet());
-		MAT_DESC_SET[0]->SetLayout(OPAQUE_SHADER->GetLayout());
-		MAT_DESC_SET[0]->CreateDescriptorSet(renderer->GetVKDevice(), Renderer::NUM_CONCURRENT_FRAMES);
-		MAT_DESC_SET[0]->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_ALL, commonUniform->GetBuffers());
-		MAT_DESC_SET[0]->UpdateSets();
+	VKIDescriptorSet* SPHERE_HELPER_DESCSET = SPHERE_HELPER_SHADER->CreateDescriptorSet();
+	SPHERE_HELPER_DESCSET->SetLayout(SPHERE_HELPER_SHADER->GetLayout());
 
+	SPHERE_HELPER_DESCSET->CreateDescriptorSet(renderer->GetVKDevice(), Renderer::NUM_CONCURRENT_FRAMES);
 
-		MAT_DESC_SET[1] = Ptr<VKIDescriptorSet>(new VKIDescriptorSet());
-		MAT_DESC_SET[1]->SetLayout(OPAQUE_SHADER->GetLayout());
-		MAT_DESC_SET[1]->CreateDescriptorSet(renderer->GetVKDevice(), Renderer::NUM_CONCURRENT_FRAMES);
-		MAT_DESC_SET[1]->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_ALL, commonUniform->GetBuffers());
-		MAT_DESC_SET[1]->UpdateSets();
-	}
+	renderer->GetPipeline()->AddGBufferToDescSet(SPHERE_HELPER_DESCSET);
+
+	SPHERE_HELPER_DESCSET->UpdateSets();
+
 }
 
 
@@ -139,9 +202,6 @@ void RenderMaterial::DestroyMaterialShaders()
 
 	SHADOW_DIR_SHADER[0]->Destroy();
 	SHADOW_OMNI_SHADER[0]->Destroy();
-
-	MAT_DESC_SET[0]->Destroy();
-	MAT_DESC_SET[1]->Destroy();
 }
 
 
@@ -199,5 +259,58 @@ RenderMaterial::RenderMaterial(ERenderMaterialType type)
 
 RenderMaterial::~RenderMaterial()
 {
+	mDescriptorSet->Destroy();
+}
 
+
+
+void RenderMaterial::Setup(MaterialData* data, RenderImage* colorImage, RenderImage* roughnessMetallicImage)
+{
+	Renderer* renderer = Application::Get().GetRenderer();
+
+	mMatData = data;
+	mTextures[0] = colorImage;
+	mTextures[1] = roughnessMetallicImage;
+
+	switch (mType)
+	{
+	case ERenderMaterialType::Opaque:
+	{
+		mDescriptorSet = Ptr<VKIDescriptorSet>(new VKIDescriptorSet());
+		mDescriptorSet->SetLayout(OPAQUE_SHADER->GetLayout());
+		mDescriptorSet->CreateDescriptorSet(renderer->GetVKDevice(), Renderer::NUM_CONCURRENT_FRAMES);
+
+		mDescriptorSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_ALL, renderer->GetPipeline()->GetUniforms().common->GetBuffers());
+
+		mDescriptorSet->AddDescriptor(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_FRAGMENT_BIT, MATERAIL_UNIFORM->GetBuffers());
+
+		mDescriptorSet->AddDescriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT, mTextures[0]->GetView(), mTextures[0]->GetSampler());
+
+		mDescriptorSet->AddDescriptor(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT, mTextures[1]->GetView(), mTextures[1]->GetSampler());
+
+		mDescriptorSet->UpdateSets();
+	}
+		break;
+	}
+}
+
+
+void RenderMaterial::Bind(VKICommandBuffer* cmdBuffer, uint32_t frame)
+{
+	VkPipelineLayout layout = VK_NULL_HANDLE;
+
+	switch (mType)
+	{
+	case ERenderMaterialType::Opaque:
+		layout = OPAQUE_SHADER->GetPipeline()->GetLayout();
+		break;
+	}
+
+	VkDescriptorSet descSet = mDescriptorSet->Get(frame);
+	vkCmdBindDescriptorSets(cmdBuffer->GetCurrent(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+		layout, 0, 1, &descSet, 0, nullptr);
 }

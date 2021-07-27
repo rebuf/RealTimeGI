@@ -35,6 +35,7 @@ class VKIImage;
 class VKISampler;
 class VKIImageView;
 class VKIFramebuffer;
+class VKIDescriptorSet;
 
 
 
@@ -83,10 +84,10 @@ public:
 	void Destroy();
 
 	// Flag this light probe dirty to be updated.
-	inline void SetDirty(bool val) { mIsDirty = val; }
+	inline void SetDirty(uint32_t val) { mIsDirty = val; }
 
 	// Return true if this light probe is dirty.
-	inline bool IsDirty() const { return mIsDirty; }
+	inline uint32_t GetDirty() const { return mIsDirty; }
 
 	// Set/Get Position.
 	inline void SetPosition(const glm::vec3& pos) { mPosition = pos; }
@@ -96,12 +97,30 @@ public:
 	inline void SetRadius(float value) { mRadius = value; }
 	inline float GetRadius() const { return mRadius; }
 
-	// Return irradiance map frame buffer.
-	inline VKIFramebuffer* GetIrradianceFB() const { return IrradianceFB.get(); }
+	// Return irradiance data...
+	inline VKIImage* GetIrradiance() const { return mIrradiance.get(); }
+	inline VKIFramebuffer* GetIrradianceFB() const { return mIrradianceFB.get(); }
+	inline VKIImageView* GetIrradianceView() const { return mView[0].get(); }
+	inline VKISampler* GetIrradianceSampler() const { return mSampler[0].get(); }
+
+	// Return irradiance data...
+	inline VKIImage* GetRadiance() const { return mRadiance.get(); }
+	inline VKIFramebuffer* GetRadianceFB() const { return mRadianceFB.get(); }
+	inline VKIImageView* GetRadianceView() const { return mView[1].get(); }
+	inline VKISampler* GetRadianceSampler() const { return mSampler[1].get(); }
+
+	// Return lighting descriptor set used for light proble lighting shader.
+	VKIDescriptorSet* GetLightingDescSet() const { return mLightingSet.get(); }
+
+	//
+	VKIDescriptorSet* GetVisualizeDescSet() const { return mVisualizeSet.get(); }
+
+	//
+	VKIDescriptorSet* GetRadianceDescSet() const { return mIrradianceFilterSet.get(); }
 
 private:
 	// Flag used to check if its dirty and need updating.
-	bool mIsDirty;
+	uint32_t mIsDirty;
 
 	// Radiance Image.
 	UniquePtr<VKIImage> mRadiance;
@@ -109,20 +128,32 @@ private:
 	// Irradiance Image.
 	UniquePtr<VKIImage> mIrradiance;
 
-	// Sampler for Radiance[0] & Irradiance[1].
+	// Sampler for Irradiance[1] & Radiance[0].
 	UniquePtr<VKISampler> mSampler[2];
 
-	// Image View for Radiance[0] & Irradiance[1].
+	// Image View for Irradiance[1] & Radiance[0].
 	UniquePtr<VKIImageView> mView[2];
 
 	// Framebuffer for irradiance target.
-	UniquePtr<VKIFramebuffer> IrradianceFB;
+	UniquePtr<VKIFramebuffer> mIrradianceFB;
+
+	// Framebuffer for Radiance target.
+	UniquePtr<VKIFramebuffer> mRadianceFB;
 
 	// The Position of the light probe.
 	glm::vec3 mPosition;
 
 	// The Radius of the light probe.
 	float mRadius;
+
+	// Descriptor Set for lighting pass.
+	UniquePtr<VKIDescriptorSet> mLightingSet;
+
+	// Descriptor Set for visualize pass.
+	UniquePtr<VKIDescriptorSet> mVisualizeSet;
+
+	// Descriptor Set for Irradiance filter pass.
+	UniquePtr<VKIDescriptorSet> mIrradianceFilterSet;
 };
 
 

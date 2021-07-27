@@ -29,6 +29,8 @@
 #include "glm/vec4.hpp"
 
 
+#include <vector>
+
 
 
 class RenderShader;
@@ -70,10 +72,10 @@ public:
 	void Destroy();
 
 	// Render light rrobe into the scene.
-	void Render(RenderLightProbe* lightProbe);
+	void Render(VKICommandBuffer* cmdBuffer, uint32_t frame, const std::vector<RenderLightProbe*>& lightProbes);
 
 	// Update the light probe by capturing.
-	void RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, uint32_t face, const glm::ivec4& viewport);
+	void RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe, uint32_t face, const glm::ivec4& viewport);
 
 	// Pre-Filter Capture Cube map and store the result in lightProbe.
 	void FilterCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe, const glm::ivec4& viewport);
@@ -83,6 +85,16 @@ public:
 
 	// Return Irradiance Filter Render Pass.
 	inline VKIRenderPass* GetIrradianceFilterPass() { return mIrradianceFilterPass.get(); }
+	inline RenderShader* GetIrradianceFilterShader() { return mIrradianceFilter.get(); }
+
+	// Return the lighting shader used to render light probe.
+	inline RenderShader* GetLightingShader() { return mLightingShader.get(); }
+
+	// 
+	inline RenderShader* GetVisualizeShader() { return mVisualizeProbeShader.get(); }
+
+	//
+	void RenderVisualize(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe);
 
 private:
 	// Setup capture cube map pass for capturing the scene into a HDR cube map.
@@ -90,6 +102,12 @@ private:
 
 	// Setup irradiance filter for filtering the the captured HDR cube map.
 	void SetupIrradianceFilter();
+
+	//  Setup the lighting pass.
+	void SetupLightingPass();
+
+	//
+	void SetupVisualizePass();
 
 private:
 	// The Vulkan Device.
@@ -114,6 +132,11 @@ private:
 	UniquePtr<VKIRenderPass> mIrradianceFilterPass;
 	UniquePtr<RenderShader> mIrradianceFilter;
 
+	// Lighting Stage Pass.
+	UniquePtr<RenderShader> mLightingShader;
+
+	//
+	UniquePtr<RenderShader> mVisualizeProbeShader;
 };
 
 

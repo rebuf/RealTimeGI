@@ -43,6 +43,32 @@ layout(binding = 3) uniform sampler2D gNormal;
 layout(binding = 4) uniform sampler2D gDepth;
 
 
+#if defined(LIGHTING_PASS_SUN_LIGHT)
+// Sun Light Shadow Map
+layout(binding = 5) uniform sampler2D SunShadow;
+
+layout(push_constant) uniform Constants
+{
+	mat4 SunTransform;
+} inConstant;
+
+#endif
+
+
+
+#if defined(LIGHTING_PASS_LIGHT_PROBE)
+// Sun Light Shadow Map
+layout(binding = 6) uniform samplerCube Irradiance;
+
+layout(push_constant) uniform Constants
+{
+	vec4 Position;
+	vec4 Radius;
+} inConstant;
+
+#endif
+
+
 
 // Output...
 layout(location = 0) out vec4 FragColor;
@@ -63,11 +89,17 @@ void main()
 	Surface.N = Normal;
 	Surface.V = normalize(inCommon.ViewPos - Surface.P);
 
-	// Sun...
-	vec3 Lighting = ComputeSunLight(Surface);
+	Surface.Albedo = Albedo.rgb;
 
+	vec3 Lighting = vec3(0.0);
 
-	FragColor.rgb = Normal * 0.5 + 0.5;
-	FragColor.a = 1.0;
+#if defined(LIGHTING_PASS_SUN_LIGHT)
+	Lighting = ComputeSunLight(Surface, SunShadow, inConstant.SunTransform);
+	FragColor.rgb = Lighting;
+	FragColor.a = 1.0; 
+#elif defined(LIGHTING_PASS_LIGHT_PROBE)
+	FragColor = ComputeIBLight(Surface, inConstant.Position.xyz, inConstant.Radius.x, Irradiance);
+#endif
+
 }
 

@@ -21,72 +21,77 @@
 
 
 
-#pragma once
+#include "Material.h"
+#include "Image2D.h"
 
-
-
-
-#include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
-
-
-#include <vector>
-
-
-
-
-class Mesh;
-class Material;
+#include "Render/RenderData/Shaders/RenderMaterial.h"
 
 
 
 
 
-// MeshNode:
-//   - Node that represent a mesh in the scene.
-//
-class MeshNode : public Node
+Material::Material()
+	: mIsDirty(false)
 {
-public:
-	// Construct.
-	MeshNode();
-
-	// Destruct.
-	~MeshNode();
-
-	// Set the mesh of this mesh node.
-	void SetMesh(uint32_t index, Ptr<Mesh> mesh);
-
-	// Return this mesh MeshNode.
-	inline Mesh* GetMesh(uint32_t index) const { return mMeshes[index].get(); }
-
-	// Return the number of meshes in this mesh node.
-	uint32_t GetNumMeshes() const { return (uint32_t)mMeshes.size(); }
-
-	// Return the mesh node bounds.
-	virtual Box GetBounds() const override;
-
-	// Set the mesh of this mesh node.
-	void SetMaterial(uint32_t index, Ptr<Material> mat);
-
-	// Return this mesh MeshNode.
-	inline Material* GetMaterial(uint32_t index) const { return mMaterials[index].get(); }
-
-private:
-	// Update nodes bounds.
-	void UpdateBounds();
-
-private:
-	// The Meshs.
-	std::vector< Ptr<Mesh> > mMeshes;
-
-	// The Materails.
-	std::vector< Ptr<Material> > mMaterials;
-
-	// The mesh bounds in world coordinate.
-	Box mBounds;
-
-};
+	mData.color = glm::vec4(1.0f);
+	mData.brdf = glm::vec4(1.0f);
+}
 
 
+Material::~Material()
+{
+
+}
+
+
+void Material::SetColor(const glm::vec4& value)
+{
+	mData.color = value;
+	mIsDirty = true;
+}
+
+
+const glm::vec4& Material::GetColor()
+{
+	return mData.color;
+}
+
+
+void Material::SetColorTexture(Ptr<Image2D> img)
+{
+	mColorTexture = img;
+	mIsDirty = true;
+}
+
+
+Ptr<Image2D> Material::GetColorTexture()
+{
+	return mColorTexture;
+}
+
+
+void Material::SetRoughnessMetallic(Ptr<Image2D> img)
+{
+	mRoughnessMetallic = img;
+	mIsDirty = true;
+}
+
+
+Ptr<Image2D> Material::GetRoughnessMetallic()
+{
+	return mRoughnessMetallic;
+}
+
+
+void Material::UpdateRenderMaterial()
+{
+	mRenderMaterial = UniquePtr<RenderMaterial>(new RenderMaterial(ERenderMaterialType::Opaque));
+
+	if (!mColorTexture->GetRenderImage())
+		mColorTexture->UpdateRenderImage();
+
+	if (!mRoughnessMetallic->GetRenderImage())
+		mRoughnessMetallic->UpdateRenderImage();
+
+	mRenderMaterial->Setup(&mData, mColorTexture->GetRenderImage(), mRoughnessMetallic->GetRenderImage());
+}

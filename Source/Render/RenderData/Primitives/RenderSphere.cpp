@@ -69,10 +69,10 @@ void RenderSphere::Draw(VKICommandBuffer* cmdBuffer)
 }
 
 
-void RenderSphere::UpdateData()
+void RenderSphere::UpdateData(uint32_t seg)
 {
 	Renderer* renderer = Application::Get().GetRenderer();
-	Mesh* sphere = Mesh::MakeSphere(32, 50.0f);
+	Mesh* sphere = Mesh::MakeSphere(seg, 50.0f);
 
 	// Vertex Buffer...
 	mVertBuffer = UniquePtr<VKIBuffer>(new VKIBuffer());

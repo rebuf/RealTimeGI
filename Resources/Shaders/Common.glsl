@@ -22,6 +22,12 @@
 
 
 
+#define COMMON_MODE_NONE 0
+#define COMMON_MODE_REF_CAPTURE 1
+
+
+
+
 // General uniform data that can be used by all shaders
 layout(binding = 0) uniform CommonBlock
 {
@@ -55,6 +61,9 @@ layout(binding = 0) uniform CommonBlock
 	
 	// Application Time.
 	float Time;
+
+	// Mode used to identify the current rendering stage.
+	int mode;
 	
 } inCommon;
 

@@ -26,6 +26,7 @@
 #include "Core/GISystem.h"
 #include "Core/Image2D.h"
 #include "Core/Mesh.h"
+#include "Core/Material.h"
 
 
 #include "Scene/Scene.h"
@@ -170,6 +171,7 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 
 	//
 	std::vector< Ptr<Mesh> > meshes;
+	std::vector< Ptr<Material> > materails;
 
 	// Mesh <-> Materail
 	for (size_t im = 0; im < model.materials.size(); ++im)
@@ -179,9 +181,14 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 		Mesh* mesh = new Mesh();
 		meshes.emplace_back(mesh);
 
+		Material* material = new Material();
+		materails.emplace_back(material);
+
 		// Load Textures...
 		const tinygltf::TextureInfo tex1 = mat.pbrMetallicRoughness.baseColorTexture;
 		const tinygltf::TextureInfo tex2 = mat.pbrMetallicRoughness.metallicRoughnessTexture;
+		material->SetColorTexture(GLTFLoadImage(tex1, dir));
+		material->SetRoughnessMetallic(GLTFLoadImage(tex2, dir));
 
 
 		// Load Mesh Data...
@@ -288,10 +295,12 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 	// Create a new MeshNode and add it to the scene.
 	Ptr<MeshNode> node = Ptr<MeshNode>( new MeshNode() );
 
-	for (size_t i = 0; i < meshes.size(); ++i)
+	for (uint32_t i = 0; i < (uint32_t)meshes.size(); ++i)
 	{
 		meshes[i]->UpdateRenderMesh(); // Create & Update RenderMesh.
-		node->SetMesh((uint32_t)i, meshes[i]);
+		materails[i]->UpdateRenderMaterial();
+		node->SetMesh(i, meshes[i]);
+		node->SetMaterial(i, materails[i]);
 	}
 
 
@@ -302,10 +311,4 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 	gImagesUri.clear();
 	gImagesMap.clear();
 	return true;
-}
-
-
-void LoadMeshes(std::vector<Mesh*>& outMeshes)
-{
-
 }

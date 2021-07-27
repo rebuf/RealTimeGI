@@ -24,17 +24,19 @@
 
 #include "RenderScene.h"
 #include "Core/Mesh.h"
+#include "Core/Material.h"
 #include "Application.h"
-#include "Render/Renderer.h"
-#include "Render/RendererPipeline.h"
 
 #include "Scene/Scene.h"
 #include "Scene/MeshNode.h"
 #include "Scene/LightProbeNode.h"
 
 #include "Render/Renderer.h"
+#include "Render/RendererPipeline.h"
+#include "Render/RenderStageLightProbes.h"
 #include "Render/RenderData/RenderShadow.h"
 #include "Render/RenderData/Primitives/RenderMesh.h"
+#include "Render/RenderData/Primitives/RenderSphere.h"
 #include "Render/RenderData/Shaders/RenderMaterial.h"
 #include "Render/RenderData/Shaders/RenderShader.h"
 #include "Render/RenderData/Shaders/RenderUniform.h"
@@ -56,6 +58,9 @@ void RDEnvironment::Reset()
 {
 	sunDir = glm::vec4(0.0f);
 	sunColorAndPower = glm::vec4(0.0f);
+	isLightProbeEnabled = false;
+	isLightProbeHelpers = false;
+	isLightProbeVisualize = false;
 }
 
 
@@ -69,6 +74,7 @@ void RDEnvironment::Reset()
 RenderScene::RenderScene()
 	: mScene(nullptr)
 	, mHasDirtyLightProbe(false)
+	, mSelectedLightProbe(nullptr)
 {
 
 }
@@ -87,10 +93,36 @@ void RenderScene::Initialize()
 	mTransformUniform = UniquePtr<RenderUniform>(new RenderUniform());
 	mTransformUniform->Create(renderer, sizeof(GUniform::CommonBlock), true);
 
+	mRSphere = UniquePtr<RenderSphere>(new RenderSphere());
+	mRSphere->UpdateData(8);
+
+	CreateSunData();
+
+}
+
+void RenderScene::CreateSunData()
+{
+	Renderer* renderer = Application::Get().GetRenderer();
+	RendererPipeline* rpipeline = Application::Get().GetRenderer()->GetPipeline();
 
 	mSunShadow = UniquePtr<RenderDirShadow>(new RenderDirShadow());
-	mSunShadow->SetSize(glm::ivec2(1024, 1024));
+	mSunShadow->SetSize(glm::ivec2(2048, 2048));
 	mSunShadow->Create();
+
+
+	// Sun Pass Descriptor Set...
+	{
+		mSunLightingSet = UniquePtr<VKIDescriptorSet>(new VKIDescriptorSet());
+		mSunLightingSet->SetLayout(rpipeline->GetSunLightingShader()->GetLayout());
+		mSunLightingSet->CreateDescriptorSet(renderer->GetVKDevice(), Renderer::NUM_CONCURRENT_FRAMES);
+
+		rpipeline->AddGBufferToDescSet(mSunLightingSet.get());
+
+		mSunLightingSet->AddDescriptor(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT, mSunShadow->GetView(), mSunShadow->GetSampler());
+
+		mSunLightingSet->UpdateSets();
+	}
 
 }
 
@@ -99,6 +131,7 @@ void RenderScene::Destroy()
 {
 	mTransformUniform->Destroy();
 	mSunShadow->Destroy();
+	mSunLightingSet->Destroy();
 }
 
 
@@ -119,6 +152,7 @@ void RenderScene::BuildRenderScene(Scene* scene)
 void RenderScene::Reset()
 {
 	mScene = nullptr;
+	mSelectedLightProbe = nullptr;
 	mHasDirtyLightProbe = false;
 	mEnvironment.Reset();
 	mLightProbes.clear();
@@ -127,6 +161,10 @@ void RenderScene::Reset()
 	for (size_t i = 0; i < mPrimitives.size(); ++i)
 		delete mPrimitives[i];
 	mPrimitives.clear();
+
+	for (size_t i = 0; i < mPrimitivesHelpers.size(); ++i)
+		delete mPrimitivesHelpers[i];
+	mPrimitivesHelpers.clear();
 }
 
 
@@ -136,6 +174,20 @@ RDScenePrimitive* RenderScene::AddNewPrimitive(IRenderPrimitives* primitive, con
 	rdPrim->primitive = primitive;
 	rdPrim->transform = transform;
 	mPrimitives.emplace_back(rdPrim);
+
+	return rdPrim;
+}
+
+
+RDScenePrimitiveHelper* RenderScene::AddNewHelper(IRenderPrimitives* primitive, const glm::vec4& pos,
+	const glm::vec4& scale, const glm::vec4& color)
+{
+	RDScenePrimitiveHelper* rdPrim = new RDScenePrimitiveHelper();
+	rdPrim->primitive = primitive;
+	rdPrim->position = pos;
+	rdPrim->scale = scale;
+	rdPrim->color = color;
+	mPrimitivesHelpers.emplace_back(rdPrim);
 
 	return rdPrim;
 }
@@ -163,13 +215,18 @@ void RenderScene::CollectSceneLights(Scene* scene)
 	mEnvironment.sunColorAndPower = glm::vec4(scene->GetGlobal().GetSunColor(),
 		scene->GetGlobal().GetSunPower());
 
-	glm::mat4 sunView = Transform::LookAt(sunDir * -2000.0f, glm::vec3(0.0f), Transform::UP);
-	glm::mat4 sunProj = Transform::Ortho(1000, -1000, 1000, -1000, 1.0f, 10000.0f);
+	glm::mat4 sunView = Transform::LookAt(-sunDir, glm::vec3(0.0f), Transform::UP);
+	glm::mat4 sunProj = Transform::Ortho(1200.0f, -1200.0f, 1200.0f, -1200.0f, -10000.0f, 2000.0f);
 	mSunShadow->SetShadowMatrix(sunProj * sunView);
 
 	// Flag sun shadow as dirty.
 	mSunShadow->SetDirty(scene->GetGlobal().HasDirtyFlag(ESceneGlobalDirtyFlag::DirtySun));
 	scene->GetGlobal().ClearDirtyFlag(ESceneGlobalDirtyFlag::DirtySun);
+
+
+	mEnvironment.isLightProbeEnabled = scene->GetGlobal().isLightProbeEnabled;
+	mEnvironment.isLightProbeHelpers = scene->GetGlobal().isLightProbeHelpers;
+	mEnvironment.isLightProbeVisualize = scene->GetGlobal().isLightProbeVisualize;
 
 
 	// Lights & Light Probes...
@@ -182,10 +239,32 @@ void RenderScene::CollectSceneLights(Scene* scene)
 
 		case ENodeType::LightProbe:
 		{
-			LightProbeNode* probe = static_cast<LightProbeNode*>(node);
-			RenderLightProbe* rprobe = probe->GetRenderLightProbe();
-			mLightProbes.emplace_back(rprobe);
-			mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->IsDirty();
+			if (mEnvironment.isLightProbeEnabled)
+			{
+				LightProbeNode* probe = static_cast<LightProbeNode*>(node);
+				RenderLightProbe* rprobe = probe->GetRenderLightProbe();
+				mLightProbes.emplace_back(rprobe);
+				mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->GetDirty() != 0;
+
+				if (mEnvironment.isLightProbeHelpers)
+				{
+					AddNewHelper(mRSphere.get(), 
+						glm::vec4(rprobe->GetPosition(), 0.0f), 
+						glm::vec4(0.1f), 
+						probe->IsSelected() ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+					if (probe->IsSelected())
+					{
+						mSelectedLightProbe = rprobe;
+
+						AddNewHelper(mRSphere.get(),
+							glm::vec4(rprobe->GetPosition(), 1.0f),
+							glm::vec4(rprobe->GetRadius() * 0.02f),
+							glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+					}
+				}
+			}
+			
 		}
 			break;
 		}
@@ -215,7 +294,10 @@ void RenderScene::TraverseScene(Scene* scene)
 
 				// New...
 				IRenderPrimitives* primitive = mesh->GetRenderMesh();
-				AddNewPrimitive(primitive, tr.GetMatrix());
+				auto newPrim = AddNewPrimitive(primitive, tr.GetMatrix());
+
+				//
+				newPrim->materail = meshNode->GetMaterial(i)->GetRenderMaterial();
 			}
 		}
 			break;
@@ -240,10 +322,9 @@ void RenderScene::DrawSceneDeferred(VKICommandBuffer* cmdBuffer, uint32_t frame)
 	RenderShader* shader = RenderMaterial::GetShader(ERenderMaterialType::Opaque);
 	shader->Bind(cmdBuffer);
 
-	RenderMaterial::MAT_DESC_SET[0]->Bind(cmdBuffer, frame, shader->GetPipeline());
-
 	for (uint32_t i = 0; i < mPrimitives.size(); ++i)
 	{
+		mPrimitives[i]->materail->Bind(cmdBuffer, frame);
 		mPrimitives[i]->primitive->Draw(cmdBuffer);
 	}
 
@@ -254,7 +335,7 @@ void RenderScene::DrawSceneShadow(VKICommandBuffer* cmdBuffer, uint32_t frame, I
 {
 	RenderShader* shader = RenderMaterial::GetDirShadowShader(ERenderMaterialType::Opaque);
 	shader->Bind(cmdBuffer);
-	RenderMaterial::MAT_DESC_SET[1]->Bind(cmdBuffer, frame, shader->GetPipeline());
+	shader->GetDescriptorSet()->Bind(cmdBuffer, frame, shader->GetPipeline());
 
 	// Shadow Input Constants...
 	GUniform::ShadowConstantBlock shadowConstant;
@@ -272,4 +353,30 @@ void RenderScene::DrawSceneShadow(VKICommandBuffer* cmdBuffer, uint32_t frame, I
 		mPrimitives[i]->primitive->Draw(cmdBuffer);
 	}
 
+}
+
+
+void RenderScene::DrawHelpers(VKICommandBuffer* cmdBuffer, uint32_t frame)
+{
+	if (mPrimitivesHelpers.empty())
+		return;
+
+	RenderShader* shader = RenderMaterial::SPHERE_HELPER_SHADER.get();
+	shader->Bind(cmdBuffer);
+	shader->GetDescriptorSet()->Bind(cmdBuffer, frame, shader->GetPipeline());
+
+	GUniform::SphereHelperBlock helperBlock;
+
+	for (uint32_t i = 0; i < mPrimitivesHelpers.size(); ++i)
+	{
+		helperBlock.position = mPrimitivesHelpers[i]->position;
+		helperBlock.scale = mPrimitivesHelpers[i]->scale;
+		helperBlock.color = mPrimitivesHelpers[i]->color;
+
+		vkCmdPushConstants(cmdBuffer->GetCurrent(), shader->GetPipeline()->GetLayout(),
+			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+			0, sizeof(helperBlock), &helperBlock);
+
+		mPrimitivesHelpers[i]->primitive->Draw(cmdBuffer);
+	}
 }

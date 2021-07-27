@@ -21,72 +21,70 @@
 
 
 
-#pragma once
+
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
 
 
 
-#include "Core/Core.h"
-#include "Node.h"
-#include "Core/Box.h"
-
-
-#include <vector>
+#include "Common.glsl"
 
 
 
 
-class Mesh;
-class Material;
-
-
-
-
-
-// MeshNode:
-//   - Node that represent a mesh in the scene.
-//
-class MeshNode : public Node
+// VERTEX OUTPUT...
+layout(location = 0) in VERTEX_OUT
 {
-public:
-	// Construct.
-	MeshNode();
+	vec3 Position;
+} inFrag;
 
-	// Destruct.
-	~MeshNode();
 
-	// Set the mesh of this mesh node.
-	void SetMesh(uint32_t index, Ptr<Mesh> mesh);
 
-	// Return this mesh MeshNode.
-	inline Mesh* GetMesh(uint32_t index) const { return mMeshes[index].get(); }
+#if defined(SPHERE_HELPER_MESH)
 
-	// Return the number of meshes in this mesh node.
-	uint32_t GetNumMeshes() const { return (uint32_t)mMeshes.size(); }
+layout(push_constant) uniform Constants
+{
+	vec4 Position;
+	vec4 Scale;
+	vec4 Color;
+} inConstant;
 
-	// Return the mesh node bounds.
-	virtual Box GetBounds() const override;
 
-	// Set the mesh of this mesh node.
-	void SetMaterial(uint32_t index, Ptr<Material> mat);
 
-	// Return this mesh MeshNode.
-	inline Material* GetMaterial(uint32_t index) const { return mMaterials[index].get(); }
 
-private:
-	// Update nodes bounds.
-	void UpdateBounds();
+// G-Buffer Input...
+layout(binding = 1) uniform sampler2D gAlbedo;
+layout(binding = 2) uniform sampler2D gBRDF;
+layout(binding = 3) uniform sampler2D gNormal;
+layout(binding = 4) uniform sampler2D gDepth;
 
-private:
-	// The Meshs.
-	std::vector< Ptr<Mesh> > mMeshes;
 
-	// The Materails.
-	std::vector< Ptr<Material> > mMaterials;
 
-	// The mesh bounds in world coordinate.
-	Box mBounds;
+// Output...
+layout(location = 0) out vec4 FragColor;
+#endif
 
-};
 
+
+
+
+void main()
+{
+	FragColor.rgb = inConstant.Color.rgb;
+
+	vec2 ScreenCoord = gl_FragCoord.xy / inCommon.Viewport.zw;
+	vec2 TargetTexCoord = ScreenCoord * (inCommon.Viewport.zw - inCommon.Viewport.xy) / inCommon.TargetSize.xy;
+	float Depth = texture(gDepth, TargetTexCoord).r;
+
+	if (Depth < gl_FragCoord.z)
+	{
+		if (inConstant.Position.w < 1.0)
+			discard;
+
+		FragColor.rgb = FragColor.rgb * 0.01;
+	}
+
+	FragColor.a = 1.0;
+}
 

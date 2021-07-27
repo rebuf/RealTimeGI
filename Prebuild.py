@@ -28,8 +28,12 @@ def AddShader(stype, spath, smacro = "", postfix = ""):
 # Add Shaders...
 AddShader("VERTEX", "ScreenVert.glsl")
 AddShader("FRAGMENT", "PostProcess.glsl")
-AddShader("FRAGMENT", "LightingPass.glsl")
 AddShader("FRAGMENT", "FinalBlit.glsl")
+AddShader("FRAGMENT", "VisualizePass.glsl")
+
+AddShader("FRAGMENT", "LightingPass.glsl", "-D=LIGHTING_PASS_SUN_LIGHT", "_Sun")
+AddShader("FRAGMENT", "LightingPass.glsl", "-D=LIGHTING_PASS_LIGHT_PROBE", "_LightProbe")
+
 
 AddShader("FRAGMENT", "CubeCaptureFrag.glsl")
 AddShader("GEOMETRY", "CubeCaptureGeom.glsl")
@@ -38,6 +42,10 @@ AddShader("VERTEX", "SphereVert.glsl")
 AddShader("GEOMETRY", "SphereGeom.glsl")
 AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_IRRADIANCE", "_Irradiance")
 AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_SPECULAR", "_Specular")
+
+
+AddShader("VERTEX", "SphereVert.glsl", "-D=SPHERE_HELPER_MESH", "_Helper")
+AddShader("FRAGMENT", "SphereFrag.glsl", "-D=SPHERE_HELPER_MESH", "_Helper")
 
 
 # Mesh Shaders...

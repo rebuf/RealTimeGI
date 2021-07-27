@@ -20,11 +20,8 @@
 
 
 
-
-
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
-
 
 
 
@@ -33,49 +30,60 @@
 
 
 
-// Input Attributes...
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+layout(binding = 10) uniform samplerCube Irradiance;
+layout(binding = 11) uniform samplerCube Radiance;
 
 
 
 
-#if defined(SPHERE_HELPER_MESH)
-layout(push_constant) uniform Constants
-{
-	vec4 Position;
-	vec4 Scale;
-	vec4 Color;
-} inConstant;
-#endif
+// Vertex Input...
+layout(location = 0) in vec2 TexCoord;
+layout(location = 1) in vec2 TargetTexCoord;
 
 
 
-
-
-// VERTEX OUTPUT...
-layout(location = 0) out VERTEX_OUT
-{
-	vec3 Position;
-} outVert;
-
-
-
-
-
+// Output...
+layout(location = 0) out vec4 FragColor;
 
 
 
 void main()
 {
+	// --- - --- - ---- ---- --- ----- ----- -
+	//             VISUALIZE
+	// --- - --- - ---- ---- --- ----- ----- -
 
-#if defined(SPHERE_HELPER_MESH)
-	gl_Position = inCommon.ViewProjMatrix * vec4(inPosition * inConstant.Scale.xyz + inConstant.Position.xyz, 1.0);
-#else
-	gl_Position = vec4(inPosition, 1.0);
-#endif
+	bool isDiscard = true;
+	vec2 gsize = inCommon.Viewport.zw;
+	float gscale = mix(1.0, 1.5, gsize.x / 1024.0 - 1.0);
+	vec4 rect;
 
-	outVert.Position = inPosition;
+	// 
+	rect = vec4(650, 50, 500, 250) * gscale;
+	if ( gl_FragCoord.x > rect.x && gl_FragCoord.x < (rect.x + rect.z)
+		&& gl_FragCoord.y > rect.y && gl_FragCoord.y < (rect.y + rect.w) )
+	{
+		vec2 ruv = (gl_FragCoord.xy - rect.xy) / (rect.zw);
+		FragColor.rgb = VisualizeCubeMap(Radiance, ruv);
+		isDiscard = false;
+	}
+
+	// 
+	rect = vec4(650, 350, 500, 250) * gscale;
+	if ( gl_FragCoord.x > rect.x && gl_FragCoord.x < (rect.x + rect.z)
+		&& gl_FragCoord.y > rect.y && gl_FragCoord.y < (rect.y + rect.w) )
+	{
+		vec2 ruv = (gl_FragCoord.xy - rect.xy) / (rect.zw);
+		FragColor.rgb = VisualizeCubeMap(Irradiance, ruv);
+		isDiscard = false;
+	}
+
+
+	if (isDiscard)
+	{
+		discard;
+	}
+
+	FragColor.a = 1.0;
 }
 

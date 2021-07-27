@@ -27,9 +27,6 @@
 #include "Transform.h"
 
 
-#include "glm/common.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/matrix_decompose.hpp"
 
 
 
@@ -154,7 +151,7 @@ glm::mat4 Transform::GetCubeView(uint32_t face, const glm::vec3& pos)
 		glm::vec3(0.0f, 0.0f, 1.0f),
 
 		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(0.0f,-1.0f, 0.0f)
+		glm::vec3(0.0f, 1.0f, 0.0f)
 	};
 
 	return Transform::LookAt(pos, pos + viewFw[face], viewUp[face]);

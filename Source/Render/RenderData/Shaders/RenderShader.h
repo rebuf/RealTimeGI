@@ -72,6 +72,9 @@ public:
 	// The Shader Domain.
 	void SetDomain(ERenderShaderDomain domain);
 
+	// Enable/Dsiable wire frame polygon mode.
+	void SetWireframe(bool value);
+
 	// Set the shader source.
 	void SetShader(ERenderShaderStage stage, const std::string& srcPath);
 

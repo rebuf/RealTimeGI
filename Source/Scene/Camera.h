@@ -51,21 +51,16 @@ public:
 	}
 
 	// Set The View position.
-	inline void SetViewPos(const glm::vec3& pos)
-	{
-		mViewPos = pos;
-	}
+	inline void SetViewPos(const glm::vec3& pos) { mViewPos = pos; }
+	inline const glm::vec3& GetViewPos() { return mViewPos; }
 
 	// Set The View Target.
-	inline void SetViewTarget(const glm::vec3& pos)
-	{
-		mViewTarget = pos;
-	}
+	inline void SetViewTarget(const glm::vec3& pos) { mViewTarget = pos; }
+	inline const glm::vec3& GetViewTarget() { return mViewTarget; }
 
-	inline void SetUp(const glm::vec3& up)
-	{
-		mUp = up;
-	}
+	// Set The View Up.
+	inline void SetUp(const glm::vec3& up) { mUp = up; }
+	inline const glm::vec3& GetUp() { return mUp; }
 
 	// Set the distance between view position & target.
 	inline void SetViewDistance(float distance)

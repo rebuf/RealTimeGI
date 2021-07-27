@@ -126,6 +126,12 @@ void RenderShader::SetDomain(ERenderShaderDomain domain)
 }
 
 
+void RenderShader::SetWireframe(bool value)
+{
+	mPipeline->SetPolygonMode(value? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL);
+}
+
+
 void RenderShader::Create()
 {
 	CHECK(!mDescLayout->IsValid() && !mPipeline->IsValid());

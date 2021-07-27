@@ -70,34 +70,64 @@ vec3 ComputeIrradiance(vec3 Normal)
 	float NumSamples = 0.0;
 
 	// Compute Basis 
-	vec3 UpVector = abs(Normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-	vec3 TangentX = normalize( cross( UpVector, Normal ) );
-	vec3 TangentY = cross( Normal, TangentX );
-
-	// Delta
-	float ThetaDt = 0.1;
-	float PhiDt = 0.025;
+	vec3 up = abs(Normal.z) > 0.999 ? vec3(0.0, sign(-Normal.z), 0.0) : vec3(0.0, 0.0, 1.0);
+	vec3 right = normalize( cross(up, Normal) );
+	up = normalize( cross(Normal, right) );
 	
-	// Compute Irradiance by sampling Environment Texture Hemisphere...
-	for (float Theta = 0; Theta < TWO_PI; Theta += ThetaDt)
+	// Delta
+	float phidlt = 0.05;
+	float thetadlt = 0.015;
+	
+	// Compute Irradiance from by sampling Environment Texture Hemisphere...
+	for (float phi = 0; phi < TWO_PI; phi += phidlt)
 	{
-		for (float Phi = 0; Phi < HALF_PI; Phi += PhiDt)
+		for (float theta = 0; theta < HALF_PI; theta += thetadlt)
 		{
-			float CosTheta = cos(Theta);
-			float SinTheta = sin(Theta);
-			float CosPhi = cos(Phi);
-			float SinPhi = sin(Phi);
+			float sinTheta = sin(theta);
+			float cosTheta = cos(theta);
 			
-			vec3 Base = CosPhi * (CosTheta * TangentX + SinTheta * TangentY);
-			vec3 Sample = SinPhi * Normal + Base;
+			vec3 base0 = cos(phi) * right + sin(phi) * up;
+			vec3 sv = cosTheta * Normal + sinTheta * base0; // Sample Vector in the hemisphere
 
-			irradiance += texture(Environment, Sample).rgb * CosPhi * SinPhi;
+			irradiance += texture(Environment, sv).rgb * cosTheta * sinTheta;
 			NumSamples += 1.0;
 		}
 	}
 	
-	
 	return PI * irradiance / NumSamples;
+
+
+
+
+//	// Compute Basis 
+//	vec3 UpVector = abs(Normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+//	vec3 TangentX = normalize( cross( UpVector, Normal ) );
+//	vec3 TangentY = cross( Normal, TangentX );
+//
+//	// Delta
+//	float ThetaDt = 0.01;
+//	float PhiDt = 0.025;
+//
+//	// Compute Irradiance by sampling Environment Texture Hemisphere...
+//	for (float Theta = 0; Theta < TWO_PI; Theta += ThetaDt)
+//	{
+//		for (float Phi = 0; Phi < HALF_PI; Phi += PhiDt)
+//		{
+//			float CosTheta = cos(Theta);
+//			float SinTheta = sin(Theta);
+//			float CosPhi = cos(Phi);
+//			float SinPhi = sin(Phi);
+//			
+//			vec3 Base = CosPhi * (CosTheta * TangentX + SinTheta * TangentY);
+//			vec3 Sample = SinPhi * Normal + Base;
+//
+//			irradiance += texture(Environment, Sample).rgb * CosPhi * SinPhi;
+//			NumSamples += 1.0;
+//		}
+//	}
+//	
+//	
+//	return PI * irradiance / NumSamples;
 }
 
 #endif
