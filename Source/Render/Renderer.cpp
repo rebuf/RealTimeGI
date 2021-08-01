@@ -293,6 +293,8 @@ void Renderer::Render()
 	// End Pipeline.
 	mPipeline->EndRender();
 
+
+	WaitForIdle();
 }
 
 

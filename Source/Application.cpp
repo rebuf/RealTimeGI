@@ -89,10 +89,9 @@ void Application::Initialize()
 
 	GLTFImporter::Import(mMainScene.get(), RESOURCES_DIRECTORY "Models/Sponza/Sponza.gltf");
 	mMainScene->ResetView(); // Reset view.
-	mMainScene->GetGlobal().SetSunColor( glm::vec3(1.0f) );
-	mMainScene->GetGlobal().SetSunPower(1.0f);
+	mMainScene->GetGlobal().SetSunColor( glm::vec3(1.0f, 0.9f, 0.85f) );
+	mMainScene->GetGlobal().SetSunPower(4.0f);
 	mMainScene->GetGlobal().SetSunDir( glm::normalize(glm::vec3(-1.0f, -1.0f, -3.0f)) );
-
 
 
 	mMainScene->GetGlobal().isLightProbeEnabled = true;
@@ -102,49 +101,100 @@ void Application::Initialize()
 
 	// ..............................................................
 	// ..............................................................
-	float h0 = 50.0f;
-	float h1 = 260.0f;
+#if 0
+	float h0 = 100.0f;
+	float h1 = 280.0f;
+	float r0 = 240.0f;
+	float r2 = 340.0f;
+
 
 	std::vector<glm::vec4> probesPos = {
-		// Bottom.......... ....................
-		// Middle
-		glm::vec4( 500.0f, 0.0f, h0, 280.0f),
-		glm::vec4( 160.0f, 0.0f, h0, 280.0f),
-		glm::vec4(-200.0f, 0.0f, h0, 280.0f),
-		glm::vec4(-630.0f, 0.0f, h0, 280.0f),
-		
+		// Bottom - Middle
+		glm::vec4( 600.0f, 0.0f, h0, r0),
+		glm::vec4( 500.0f, 0.0f, h0, r0),
+		glm::vec4( 400.0f, 0.0f, h0, r0),
+		glm::vec4( 300.0f, 0.0f, h0, r0),
+		glm::vec4( 200.0f, 0.0f, h0, r0),
+		glm::vec4( 100.0f, 0.0f, h0, r0),
+		glm::vec4( 000.0f, 0.0f, h0, r0),
+		glm::vec4(-200.0f, 0.0f, h0, r0),
+		glm::vec4(-300.0f, 0.0f, h0, r0),
+		glm::vec4(-400.0f, 0.0f, h0, r0),
+		glm::vec4(-500.0f, 0.0f, h0, r0),
+		glm::vec4(-600.0f, 0.0f, h0, r0),
+
+		// Top - Middle
+		glm::vec4( 600.0f, 0.0f, h1, r0),
+		glm::vec4( 500.0f, 0.0f, h1, r0),
+		glm::vec4( 400.0f, 0.0f, h1, r0),
+		glm::vec4( 300.0f, 0.0f, h1, r0),
+		glm::vec4( 200.0f, 0.0f, h1, r0),
+		glm::vec4( 100.0f, 0.0f, h1, r0),
+		glm::vec4( 000.0f, 0.0f, h1, r0),
+		glm::vec4(-200.0f, 0.0f, h1, r0),
+		glm::vec4(-300.0f, 0.0f, h1, r0),
+		glm::vec4(-400.0f, 0.0f, h1, r0),
+		glm::vec4(-500.0f, 0.0f, h1, r0),
+		glm::vec4(-600.0f, 0.0f, h1, r0),
+
+		// Bottom...........................
 		// Left
-		glm::vec4( 500.0f, -220.0f, h0, 240.0f),
-		glm::vec4( 160.0f, -220.0f, h0, 240.0f),
-		glm::vec4(-200.0f, -220.0f, h0, 240.0f),
-		glm::vec4(-630.0f, -220.0f, h0, 240.0f),
+		glm::vec4( 600.0f,-220.0f, h0, r0),
+		glm::vec4( 500.0f,-220.0f, h0, r0),
+		glm::vec4( 400.0f,-220.0f, h0, r0),
+		glm::vec4( 300.0f,-220.0f, h0, r0),
+		glm::vec4( 200.0f,-220.0f, h0, r0),
+		glm::vec4( 100.0f,-220.0f, h0, r0),
+		glm::vec4( 000.0f,-220.0f, h0, r0),
+		glm::vec4(-200.0f,-220.0f, h0, r0),
+		glm::vec4(-300.0f,-220.0f, h0, r0),
+		glm::vec4(-400.0f,-220.0f, h0, r0),
+		glm::vec4(-500.0f,-220.0f, h0, r0),
+		glm::vec4(-600.0f,-220.0f, h0, r0),
 
 		// Left
-		glm::vec4( 500.0f, 220.0f, h0, 240.0f),
-		glm::vec4( 160.0f, 220.0f, h0, 240.0f),
-		glm::vec4(-200.0f, 220.0f, h0, 240.0f),
-		glm::vec4(-630.0f, 220.0f, h0, 240.0f),
+		glm::vec4( 600.0f, 220.0f, h0, r0),
+		glm::vec4( 500.0f, 220.0f, h0, r0),
+		glm::vec4( 400.0f, 220.0f, h0, r0),
+		glm::vec4( 300.0f, 220.0f, h0, r0),
+		glm::vec4( 200.0f, 220.0f, h0, r0),
+		glm::vec4( 100.0f, 220.0f, h0, r0),
+		glm::vec4( 000.0f, 220.0f, h0, r0),
+		glm::vec4(-200.0f, 220.0f, h0, r0),
+		glm::vec4(-300.0f, 220.0f, h0, r0),
+		glm::vec4(-400.0f, 220.0f, h0, r0),
+		glm::vec4(-500.0f, 220.0f, h0, r0),
+		glm::vec4(-600.0f, 220.0f, h0, r0),
 		
 		// Top..............................
-		// Middle
-		glm::vec4( 500.0f, 0.0f, h1, 280.0f),
-		glm::vec4( 160.0f, 0.0f, h1, 280.0f),
-		glm::vec4(-200.0f, 0.0f, h1, 280.0f),
-		glm::vec4(-630.0f, 0.0f, h1, 280.0f),
-		
 		// Left
-		glm::vec4( 500.0f, -220.0f, h1, 240.0f),
-		glm::vec4( 160.0f, -220.0f, h1, 240.0f),
-		glm::vec4(-200.0f, -220.0f, h1, 240.0f),
-		glm::vec4(-630.0f, -220.0f, h1, 240.0f),
+		glm::vec4( 600.0f, 220.0f, h1, r0),
+		glm::vec4( 500.0f, 220.0f, h1, r0),
+		glm::vec4( 400.0f, 220.0f, h1, r0),
+		glm::vec4( 300.0f, 220.0f, h1, r0),
+		glm::vec4( 200.0f, 220.0f, h1, r0),
+		glm::vec4( 100.0f, 220.0f, h1, r0),
+		glm::vec4( 000.0f, 220.0f, h1, r0),
+		glm::vec4(-200.0f, 220.0f, h1, r0),
+		glm::vec4(-300.0f, 220.0f, h1, r0),
+		glm::vec4(-400.0f, 220.0f, h1, r0),
+		glm::vec4(-500.0f, 220.0f, h1, r0),
+		glm::vec4(-600.0f, 220.0f, h1, r0),
 
 		// Left
-		glm::vec4( 500.0f, 220.0f, h1, 240.0f),
-		glm::vec4( 160.0f, 220.0f, h1, 240.0f),
-		glm::vec4(-200.0f, 220.0f, h1, 240.0f),
-		glm::vec4(-630.0f, 220.0f, h1, 240.0f),
+		glm::vec4( 600.0f,-220.0f, h1, r0),
+		glm::vec4( 500.0f,-220.0f, h1, r0),
+		glm::vec4( 400.0f,-220.0f, h1, r0),
+		glm::vec4( 300.0f,-220.0f, h1, r0),
+		glm::vec4( 200.0f,-220.0f, h1, r0),
+		glm::vec4( 100.0f,-220.0f, h1, r0),
+		glm::vec4( 000.0f,-220.0f, h1, r0),
+		glm::vec4(-200.0f,-220.0f, h1, r0),
+		glm::vec4(-300.0f,-220.0f, h1, r0),
+		glm::vec4(-400.0f,-220.0f, h1, r0),
+		glm::vec4(-500.0f,-220.0f, h1, r0),
+		glm::vec4(-600.0f,-220.0f, h1, r0)
 	};
-
 
 
 	for (uint32_t i = 0; i < probesPos.size(); ++i)
@@ -155,7 +205,40 @@ void Application::Initialize()
 		tmp0->UpdateRenderLightProbe();
 		mMainScene->AddNode(tmp0);
 	}
+#endif
 
+
+	// ..............................................................
+	// ..............................................................
+#if 0
+
+	// Irrdiance Volume.
+	Box sceneBounds = mMainScene->ComputeBounds();
+	glm::vec3 vSize = sceneBounds.Extent() * 1.4f;
+	glm::vec3 vStart = sceneBounds.Center() - vSize * 0.5f;
+
+	int32_t cx = 15, cy = 8, cz = 5;
+	float vRadius = glm::max(vSize.x, glm::max(vSize.y, vSize.z)) / (float)glm::min(cx, glm::min(cy, cz));
+	vRadius *= 0.6;
+
+	for (int32_t z = 0; z < cz; ++z)
+	{
+		for (int32_t y = 0; y < cy; ++y)
+		{
+			for (int32_t x = 0; x < cx; ++x)
+			{
+				glm::vec3 f = vStart + vSize * glm::vec3((float)x / (float)cx,
+					(float)y / (float)cy, (float)z / (float)cz);
+
+				Ptr<LightProbeNode> probe(new LightProbeNode());
+				probe->SetTranslate(f);
+				probe->SetRadius(vRadius);
+				probe->UpdateRenderLightProbe();
+				mMainScene->AddNode(probe);
+			}
+		}
+	}
+#endif
 
 	// ..............................................................
 	// ..............................................................
@@ -201,7 +284,7 @@ int32_t Application::Run()
 
 
 		GISystem::Sleep(24);
-		//LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
+		LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
 	}
 
 

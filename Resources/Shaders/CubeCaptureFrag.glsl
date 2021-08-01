@@ -24,8 +24,14 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 
+precision highp float;
+
+
+
 
 #include "Common.glsl"
+
+
 
 
 
@@ -35,6 +41,7 @@ layout(location = 1) in vec2 TargetTexCoord; // The texture coordinate for sampl
 
 // Input...
 layout(binding = 1) uniform sampler2D CaptureRender;
+layout(binding = 2) uniform sampler2D CaptureDetphRender;
 
 
 // Output...
@@ -44,8 +51,13 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-	vec4 RenderColor = texture(CaptureRender, TargetTexCoord);
+	FragColor.rgb = texture(CaptureRender, TargetTexCoord).rgb;
 
-	FragColor = RenderColor;
+	float Depth = texture(CaptureDetphRender, TargetTexCoord).r;
+	vec3 WorldPos = ComputeWorldPos(Depth, TexCoord);
+	vec3 Center = ComputeWorldPos(0.0, TexCoord);
+	Depth = length(WorldPos - Center);
+
+	FragColor.a = clamp(Depth * 0.001, 0.0, 1.0);
 }
 

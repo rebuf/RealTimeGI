@@ -63,12 +63,13 @@ RenderStageLightProbes::~RenderStageLightProbes()
 }
 
 
-void RenderStageLightProbes::Initialize(VKIDevice* device, StageRenderTarget hdrTargets[2], RenderUniform* commonUniform)
+void RenderStageLightProbes::Initialize(VKIDevice* device, StageRenderTarget hdrTargets[2],
+	StageRenderTarget* dephtTarget, RenderUniform* commonUniform)
 {
 	mDevice = device;
 	mCommon = commonUniform;
 	mHDRTarget[0] = &hdrTargets[0];
-	mHDRTarget[1] = &hdrTargets[1];
+	mDepth = dephtTarget;
 
 	// The Render Sphere.
 	mSphere = Application::Get().GetRenderer()->GetSphere();
@@ -111,7 +112,6 @@ void RenderStageLightProbes::FilterCaptureCube(VKICommandBuffer* cmdBuffer, uint
 {
 	mIrradianceFilterPass->Begin(cmdBuffer, lightProbe->GetIrradianceFB(), viewport);
 	mIrradianceFilter->Bind(cmdBuffer);
-	//mIrradianceFilter->GetDescriptorSet()->Bind(cmdBuffer, frame, mIrradianceFilter->GetPipeline());
 
 	lightProbe->GetRadianceDescSet()->Bind(cmdBuffer, frame, mIrradianceFilter->GetPipeline());
 
@@ -217,6 +217,9 @@ void RenderStageLightProbes::SetupCaptureCubePass()
 	mCaptureCubeShader->AddInput(1, ERenderShaderInputType::ImageSampler,
 		ERenderShaderStage::Fragment);
 
+	mCaptureCubeShader->AddInput(2, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
 	mCaptureCubeShader->AddPushConstant(0, 0, sizeof(int32_t), ERenderShaderStage::Geometry);
 
 	mCaptureCubeShader->Create();
@@ -231,6 +234,9 @@ void RenderStageLightProbes::SetupCaptureCubePass()
 
 	descriptorSet->AddDescriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
 		mHDRTarget[0]->view.get(), mHDRTarget[0]->sampler.get());
+
+	descriptorSet->AddDescriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+		mDepth->view.get(), mDepth->sampler.get());
 
 	descriptorSet->UpdateSets();
 }
@@ -287,22 +293,6 @@ void RenderStageLightProbes::SetupIrradianceFilter()
 
 	mIrradianceFilter->Create();
 
-	// Descriptor Set
-	//VKIDescriptorSet* descSet = mIrradianceFilter->CreateDescriptorSet();
-	//descSet->SetLayout(mIrradianceFilter->GetLayout());
-	//descSet->CreateDescriptorSet(mDevice, Renderer::NUM_CONCURRENT_FRAMES);
-
-	//descSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-	//	VK_SHADER_STAGE_ALL, mCommon->GetBuffers());
-
-	//descSet->AddDescriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_GEOMETRY_BIT,
-	//	mSphere->GetSphereUnifrom()->GetBuffers());
-
-	//descSet->AddDescriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-	//	mCaptureCubeTarget.view.get(), mCaptureCubeTarget.sampler.get());
-
-	//descSet->UpdateSets();
-
 }
 
 
@@ -319,7 +309,7 @@ void RenderStageLightProbes::SetupLightingPass()
 	mLightingShader->SetViewport(glm::ivec4(0, 0, 1920.0, 1080.0));
 	mLightingShader->SetViewportDynamic(true);
 	mLightingShader->SetBlendingEnabled(0, true);
-	mLightingShader->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::OneMinusSrcAlpha,
+	mLightingShader->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::One,
 		ERenderBlendOp::Add);
 
 	mLightingShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
@@ -338,6 +328,9 @@ void RenderStageLightProbes::SetupLightingPass()
 		ERenderShaderStage::Fragment);
 
 	mLightingShader->AddInput(6, ERenderShaderInputType::ImageSampler,
+		ERenderShaderStage::Fragment);
+
+	mLightingShader->AddInput(7, ERenderShaderInputType::ImageSampler,
 		ERenderShaderStage::Fragment);
 
 	mLightingShader->AddPushConstant(0, 0, sizeof(LightProbeConstants), ERenderShaderStage::Fragment);

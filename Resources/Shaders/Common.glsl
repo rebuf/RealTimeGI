@@ -63,7 +63,7 @@ layout(binding = 0) uniform CommonBlock
 	float Time;
 
 	// Mode used to identify the current rendering stage.
-	int mode;
+	int Mode;
 	
 } inCommon;
 
@@ -105,7 +105,7 @@ vec3 ComputeWorldPos(float Depth, vec2 TexCoord)
 
 
 // Visualize CubeMap from screen coordiante.
-vec3 VisualizeCubeMap(samplerCube Map, vec2 Coord)
+vec4 VisualizeCubeMap(samplerCube Map, vec2 Coord)
 {
 	Coord.y = 1.0 - Coord.y;
 
@@ -114,5 +114,5 @@ vec3 VisualizeCubeMap(samplerCube Map, vec2 Coord)
 	float CosPhi = cos(Phi);	
 
 	vec3 n = vec3(CosPhi * cos(Theta), CosPhi * sin(Theta), sin(Phi));
-	return texture(Map, n.xyz).rgb;
+	return texture(Map, n.xyz);
 }

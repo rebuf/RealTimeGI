@@ -309,6 +309,17 @@ void RenderShader::SetBlending(uint32_t index, ERenderBlendFactor src, ERenderBl
 }
 
 
+void RenderShader::SetBlending(uint32_t index, ERenderBlendFactor csrc, ERenderBlendFactor cdst, ERenderBlendOp cop,
+	ERenderBlendFactor asrc, ERenderBlendFactor adst, ERenderBlendOp aop)
+{
+	VkBlendFactor vkcsrc = (VkBlendFactor)csrc, vkcdst = (VkBlendFactor)cdst;
+	VkBlendFactor vkasrc = (VkBlendFactor)asrc, vkadst = (VkBlendFactor)adst;
+	VkBlendOp vkcop = (VkBlendOp)cop;
+	VkBlendOp vkaop = (VkBlendOp)aop;
+	mPipeline->SetBlending(index, vkcsrc, vkcdst, vkcop, vkasrc, vkadst, vkaop);
+}
+
+
 void RenderShader::Bind(VKICommandBuffer* cmdBuffer) const
 {
 	vkCmdBindPipeline(cmdBuffer->GetCurrent(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline->Get());

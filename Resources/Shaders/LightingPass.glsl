@@ -24,6 +24,11 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 
+precision highp float;
+
+
+
+
 
 #include "Common.glsl"
 #include "CommonLighting.glsl"
@@ -59,6 +64,7 @@ layout(push_constant) uniform Constants
 #if defined(LIGHTING_PASS_LIGHT_PROBE)
 // Sun Light Shadow Map
 layout(binding = 6) uniform samplerCube Irradiance;
+layout(binding = 7) uniform samplerCube Radiance;
 
 layout(push_constant) uniform Constants
 {
@@ -98,7 +104,7 @@ void main()
 	FragColor.rgb = Lighting;
 	FragColor.a = 1.0; 
 #elif defined(LIGHTING_PASS_LIGHT_PROBE)
-	FragColor = ComputeIBLight(Surface, inConstant.Position.xyz, inConstant.Radius.x, Irradiance);
+	FragColor = ComputeIBLight(Surface, inConstant.Position.xyz, inConstant.Radius.x, Irradiance, Radiance);
 #endif
 
 }

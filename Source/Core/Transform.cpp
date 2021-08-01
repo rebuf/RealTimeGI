@@ -161,7 +161,7 @@ glm::mat4 Transform::GetCubeView(uint32_t face, const glm::vec3& pos)
 glm::mat4 Transform::GetCubeViewProj(uint32_t face, const glm::vec3& pos)
 {
 	glm::mat4 view = GetCubeView(face, pos);
-	glm::mat4 proj = Transform::Perspective(HALF_PI, 1.0f, 1.0f, 320000.0f);
+	glm::mat4 proj = Transform::Perspective(HALF_PI, 1.0f, 1.0f, 32000.0f);
 
 	return proj * view;
 }

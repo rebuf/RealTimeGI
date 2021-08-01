@@ -47,6 +47,40 @@ layout(location = 0) out vec4 FragColor;
 
 
 
+
+
+vec2 signNotZero(vec2 v) 
+{
+	return vec2((v.x >= 0.0) ? +1.0 : -1.0, (v.y >= 0.0) ? +1.0 : -1.0);
+}
+
+
+vec2 octEncode(in vec3 v) 
+{
+	v.xyz = -v.xzy;
+
+	float l1norm = abs(v.x) + abs(v.y) + abs(v.z);
+	vec2 result = v.xy * (1.0 / l1norm);
+	if (v.z < 0.0) {
+	    result = (1.0 - abs(result.yx)) * signNotZero(result.xy);
+	}
+
+	return result;
+}
+
+
+vec3 octDecode(vec2 o) 
+{
+	vec3 v = vec3(o.x, o.y, 1.0 - abs(o.x) - abs(o.y));
+	if (v.z < 0.0) {
+	    v.xy = (1.0 - abs(v.yx)) * signNotZero(v.xy);
+	}
+
+	return normalize(-v.xzy);
+}
+
+
+
 void main()
 {
 	// --- - --- - ---- ---- --- ----- ----- -
@@ -64,7 +98,7 @@ void main()
 		&& gl_FragCoord.y > rect.y && gl_FragCoord.y < (rect.y + rect.w) )
 	{
 		vec2 ruv = (gl_FragCoord.xy - rect.xy) / (rect.zw);
-		FragColor.rgb = VisualizeCubeMap(Radiance, ruv);
+		FragColor.rgb = VisualizeCubeMap(Radiance, ruv).rgb;
 		isDiscard = false;
 	}
 
@@ -74,7 +108,7 @@ void main()
 		&& gl_FragCoord.y > rect.y && gl_FragCoord.y < (rect.y + rect.w) )
 	{
 		vec2 ruv = (gl_FragCoord.xy - rect.xy) / (rect.zw);
-		FragColor.rgb = VisualizeCubeMap(Irradiance, ruv);
+		FragColor.rgb = VisualizeCubeMap(Irradiance, ruv).rgb;
 		isDiscard = false;
 	}
 

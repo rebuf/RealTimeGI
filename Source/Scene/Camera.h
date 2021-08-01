@@ -36,7 +36,7 @@ public:
 	// Construct.
 	Camera()
 		: mNear(1.0f)
-		, mFar(320000.0f)
+		, mFar(32000.0f)
 		, mViewPos(0.0f)
 		, mViewTarget(Transform::FORWARD)
 		, mUp(Transform::UP)
@@ -52,15 +52,15 @@ public:
 
 	// Set The View position.
 	inline void SetViewPos(const glm::vec3& pos) { mViewPos = pos; }
-	inline const glm::vec3& GetViewPos() { return mViewPos; }
+	inline const glm::vec3& GetViewPos() const { return mViewPos; }
 
 	// Set The View Target.
 	inline void SetViewTarget(const glm::vec3& pos) { mViewTarget = pos; }
-	inline const glm::vec3& GetViewTarget() { return mViewTarget; }
+	inline const glm::vec3& GetViewTarget() const { return mViewTarget; }
 
 	// Set The View Up.
 	inline void SetUp(const glm::vec3& up) { mUp = up; }
-	inline const glm::vec3& GetUp() { return mUp; }
+	inline const glm::vec3& GetUp() const { return mUp; }
 
 	// Set the distance between view position & target.
 	inline void SetViewDistance(float distance)
@@ -73,6 +73,12 @@ public:
 	{
 		mViewTarget = mViewPos + dir * mDistance;
 		RecomputeUp();
+	}
+
+	// Change the view target to be in a direction.
+	inline glm::vec3 GetViewDir() const
+	{
+		return glm::normalize(mViewTarget - mViewPos);
 	}
 
 	// Recompute up to be orthographic with the new view pos & target.

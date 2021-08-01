@@ -52,7 +52,6 @@
 
 
 
-
 void StageRenderTarget::Reset()
 {
 	image.reset();
@@ -118,7 +117,7 @@ void RendererPipeline::Initialize()
 
 	//
 	mStageLightProbes = UniquePtr<RenderStageLightProbes>(new RenderStageLightProbes());
-	mStageLightProbes->Initialize(mDevice, mHDRTarget, mUniforms.common.get());
+	mStageLightProbes->Initialize(mDevice, mHDRTarget, &mDepthTarget, mUniforms.common.get());
 }
 
 
@@ -160,6 +159,7 @@ void RendererPipeline::BeginRender(uint32_t frame, RenderScene* rscene, const gl
 		mCommonBlock.sunColorAndPower = rscene->GetEnvironment().sunColorAndPower;
 		mCommonBlock.nearFar = rscene->GetNearFar();
 		mCommonBlock.time = Application::Get().GetAppTime();
+		mCommonBlock.mode = COMMON_MODE_NONE;
 
 		mUniforms.common->Update(frame, &mCommonBlock); // Update Common Block.
 	}
@@ -261,6 +261,7 @@ void RendererPipeline::RenderSceneStage(VKICommandBuffer* cmdBuffer, ERenderScen
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			0, sizeof(glm::mat4), &shadowMatrix);
 
+
 		vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
 
 
@@ -312,9 +313,9 @@ void RendererPipeline::UpdateLightProbes(VKICommandBuffer* cmdBuffer)
 	glm::vec4 rViewport(0.0f, 0.0f, LIGHT_PROBES_TARGET_SIZE, LIGHT_PROBES_TARGET_SIZE);
 	glm::ivec4 riViewport(0, 0, LIGHT_PROBES_TARGET_SIZE, LIGHT_PROBES_TARGET_SIZE);
 
-	mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
-		offsetof(GUniform::CommonBlock, viewport), 16, glm::value_ptr(rViewport));
-
+	GUniform::CommonBlock probeCommon = mCommonBlock;
+	probeCommon.viewport = rViewport;
+	probeCommon.mode = COMMON_MODE_REF_CAPTURE;
 
 	// Viewport...
 	VkViewport viewport = { rViewport.x, rViewport.y, rViewport.z, rViewport.w, 0.0f, 1.0f };
@@ -336,31 +337,30 @@ void RendererPipeline::UpdateLightProbes(VKICommandBuffer* cmdBuffer)
 		if (!probe->GetDirty() != 0)
 			continue;
 
-		//mStageLightProbes->GetCaptureCube()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
-		probe->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		// Capture the scene for each cubemap face.
 		for (uint32_t iface = 0; iface < 6; ++iface)
 		{
-
-			glm::mat4 probeFaceViewProj = Transform::GetCubeViewProj(iface, probe->GetPosition());
-			glm::mat4 probeFaceViewProjInverse = glm::inverse(probeFaceViewProj);
-
-			mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
-				offsetof(GUniform::CommonBlock, viewProjMatrix), sizeof(glm::mat4), glm::value_ptr(probeFaceViewProj));
+			probeCommon.viewProjMatrix = Transform::GetCubeViewProj(iface, probe->GetPosition());
+			probeCommon.viewProjMatrixInverse = glm::inverse(probeCommon.viewProjMatrix);
+			probeCommon.nearFar = glm::vec2(1.0, 32000.0f);
 
 			mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
-				offsetof(GUniform::CommonBlock, viewProjMatrixInverse), sizeof(glm::mat4), glm::value_ptr(probeFaceViewProjInverse));
+				0, sizeof(GUniform::CommonBlock), &probeCommon);
 
 			// Render The Scene for light probe stae.
 			RenderSceneStage(cmdBuffer, ERenderSceneStage::LightProbe);
 
+			//
+			probe->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+
 			// Render the captured scene into the cubemap.
 			mStageLightProbes->RenderCaptureCube(cmdBuffer, mFrame, probe, iface, riViewport);
+
+			//
+			probe->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 
-		//mStageLightProbes->GetCaptureCube()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
-		probe->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
 
 		// Pre-Filter cube map and store it into the probe images to be used later for lighting.
@@ -370,6 +370,7 @@ void RendererPipeline::UpdateLightProbes(VKICommandBuffer* cmdBuffer)
 	// Clear Dirty Flag.
 	for (RenderLightProbe* probe : lightProbes)
 		probe->SetDirty(probe->GetDirty() - 1);
+		//probe->SetDirty(0);
 
 
 	// Reset Common Block Uniform...

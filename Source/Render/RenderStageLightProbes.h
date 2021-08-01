@@ -66,7 +66,7 @@ public:
 	~RenderStageLightProbes();
 
 	// Initialize The Pipeline.
-	void Initialize(VKIDevice* device, StageRenderTarget hdrTargets[2], RenderUniform* commonUniform);
+	void Initialize(VKIDevice* device, StageRenderTarget hdrTargets[2], StageRenderTarget* dephtTarget, RenderUniform* commonUniform);
 
 	// Destroy The Pipeline.
 	void Destroy();
@@ -118,6 +118,7 @@ private:
 
 	// The Pipeline HDR Target.
 	StageRenderTarget* mHDRTarget[2];
+	StageRenderTarget* mDepth;
 
 	// The Render Sphere.
 	class RenderSphere* mSphere;

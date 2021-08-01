@@ -201,8 +201,8 @@ void RenderScene::CollectSceneView(Scene* scene)
 	mViewProjInv = glm::inverse(mViewProj);
 	scene->GetCamera().GetZPlane(mNearFar.x, mNearFar.y);
 
-	mViewPos = view * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	mViewDir = view * glm::vec4(Transform::FORWARD, 0.0f);
+	mViewPos = scene->GetCamera().GetViewPos();
+	mViewDir = scene->GetCamera().GetViewDir();
 }
 
 

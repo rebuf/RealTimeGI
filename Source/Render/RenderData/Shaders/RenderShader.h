@@ -126,6 +126,8 @@ public:
 
 	// Set blending operation for a specific attachment index.
 	void SetBlending(uint32_t index, ERenderBlendFactor src, ERenderBlendFactor dst, ERenderBlendOp op);
+	void SetBlending(uint32_t index, ERenderBlendFactor csrc, ERenderBlendFactor cdst, ERenderBlendOp cop,
+		ERenderBlendFactor asrc, ERenderBlendFactor adst, ERenderBlendOp aop);
 
 	// Return true if the viewport of this pipeline is a dynamic state.
 	inline bool IsViewportDynamic() { return mIsDynamicViewport; }

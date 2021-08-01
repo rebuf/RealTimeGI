@@ -138,6 +138,9 @@ void RenderLightProbe::Create()
 		mLightingSet->AddDescriptor(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
 			VK_SHADER_STAGE_FRAGMENT_BIT, mView[0].get(), mSampler[0].get());
 
+		mLightingSet->AddDescriptor(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT, mView[1].get(), mSampler[1].get());
+
 		mLightingSet->UpdateSets();
 	}
 
