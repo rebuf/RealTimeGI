@@ -20,81 +20,70 @@
 
 
 
-#version 450
-#extension GL_ARB_separate_shader_objects : enable
+
+#pragma once
 
 
 
-#include "Common.glsl"
+
+#include "Core/Core.h"
+#include "Node.h"
+#include "Core/Box.h"
 
 
-layout (triangles) in;
-layout (triangle_strip, max_vertices=18) out;
+
+
+class RenderIrradianceVolume;
 
 
 
-// Constant Input...
-#if defined(PIPELINE_IBL_SPECULAR)
-layout( push_constant ) uniform Constant
+
+
+
+
+
+// LightProbeNode:
+//    - 
+//
+class IrradianceVolumeNode : public Node
 {
-	float Roughness;
-  int Layer;
-} inConstant;
-#elif defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
-layout( push_constant ) uniform Constant
-{
-  int Layer;
-} inConstant;
-#endif
+public:
+	// Construct.
+	IrradianceVolumeNode();
+
+	// Destruct.
+	~IrradianceVolumeNode();
+
+	// Set/Get Probe Radius.
+	void SetVolume(const glm::vec3& start, const glm::vec3& extent, const glm::ivec3& count);
+	void GetVolume(glm::vec3& start, glm::vec3& extent, glm::ivec3& count) const;
+
+	// Return the render light probe.
+	inline RenderIrradianceVolume* GetRenderIrradianceVolume() { return mRenderIrradianceVolume.get(); }
+
+	// Create/Update render light probe data.
+	void UpdateIrradianceVolumeNode();
+
+	// Bounds.
+	virtual Box GetBounds() const override;
+
+protected:
+	// Called when the node transform changes.
+	virtual void OnTransform() override;
+
+private:
+	// The render data for this irradiance volume.
+	UniquePtr<RenderIrradianceVolume> mRenderIrradianceVolume;
+
+	// Volume Start.
+	glm::vec3 mStart;
+
+	// Volume Extent.
+	glm::vec3 mExtent;
+	
+	// Volume Count.
+	glm::ivec3 mCount;
+};
 
 
-
-// VERTEX OUTPUT...
-layout(location = 0) in VERTEX_OUT
-{
-	vec3 Position;
-} inGeom[];
-
-
-
-
-// GEOMETRY OUTPUT...
-layout(location = 0) out GEOM_OUT
-{
-	vec3 Position;
-} outGeom;
-
-
-
-// 
-layout(binding = 1) uniform SphereTransfrom
-{
-  mat4 Proj;
-  mat4 View[6];
-} inSphere;
-
-
-
-void main()
-{
-  for (int f = 0; f < 6; ++f)
-  {
-#if defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
-    gl_Layer = inConstant.Layer * 6 + f;
-#else
-    gl_Layer = f;
-#endif
-
-    for (int i = 0; i < 3; ++i)
-    {
-      outGeom.Position = inGeom[i].Position;
-      gl_Position = inSphere.Proj * inSphere.View[f] * gl_in[i].gl_Position;
-      EmitVertex();
-    }
-
-    
-    EndPrimitive();
-  }
-
-}
 

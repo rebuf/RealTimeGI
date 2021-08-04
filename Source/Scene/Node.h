@@ -48,11 +48,14 @@ enum class ENodeType
 	// Mesh Node.
 	MeshNode,
 
-	//
+	// Light Node
 	Light,
 
 	// Light Probe.
-	LightProbe
+	LightProbe,
+
+	// Irradiance Volume.
+	IrradianceVolume
 };
 
 
@@ -91,6 +94,10 @@ public:
 	// Return this nodes bounds.
 	virtual Box GetBounds() const;
 
+	// Set/Get Selected Flag.
+	inline void SetSelected(bool val) { mIsSelected = val; }
+	inline bool IsSelected() { return mIsSelected; }
+
 protected:
 	// Called when the node has been added to the scene.
 	virtual void OnAdd(Scene* scene);
@@ -115,6 +122,8 @@ private:
 	// The Index of this node in the scene.
 	uint32_t mIndexInScene;
 
+	// True if the probe current selcted & active.
+	bool mIsSelected;
 };
 
 

@@ -43,11 +43,7 @@
 #include "VKInterface/VKIGraphicsPipeline.h"
 
 
-struct LightProbeConstants
-{
-	glm::vec4 ProbePosition;
-	glm::vec4 Radius;
-} inConstant;
+
 
 
 	// Construct.
@@ -95,21 +91,43 @@ void RenderStageLightProbes::RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint
 	mCaptureCubeShader->Bind(cmdBuffer);
 	mCaptureCubeShader->GetDescriptorSet()->Bind(cmdBuffer, frame, mCaptureCubeShader->GetPipeline());
 
-	uint32_t layer = face;
+	int32_t layer = (int32_t)face;
 
 	vkCmdPushConstants(cmdBuffer->GetCurrent(),
 		mCaptureCubeShader->GetPipeline()->GetLayout(),
 		VK_SHADER_STAGE_GEOMETRY_BIT,
-		0, sizeof(uint32_t), &layer);
+		0, sizeof(int32_t), &layer);
 
 	vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
 	mCaptureCubeRenderPass->End(cmdBuffer);
 }
 
 
-void RenderStageLightProbes::FilterCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, 
+void RenderStageLightProbes::RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame,
+	RenderIrradianceVolume* volume, uint32_t layer, const glm::ivec4& viewport)
+{
+	mCaptureCubeRenderPass->Begin(cmdBuffer, volume->GetRadianceFB(), viewport);
+	mCaptureCubeShader->Bind(cmdBuffer);
+	mCaptureCubeShader->GetDescriptorSet()->Bind(cmdBuffer, frame, mCaptureCubeShader->GetPipeline());
+
+	int32_t ilayer = (int32_t)layer;
+
+	vkCmdPushConstants(cmdBuffer->GetCurrent(),
+		mCaptureCubeShader->GetPipeline()->GetLayout(),
+		VK_SHADER_STAGE_GEOMETRY_BIT,
+		0, sizeof(int32_t), &ilayer);
+
+	vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
+	mCaptureCubeRenderPass->End(cmdBuffer);
+}
+
+
+void RenderStageLightProbes::FilterIrradiance(VKICommandBuffer* cmdBuffer, uint32_t frame, 
 	RenderLightProbe* lightProbe, const glm::ivec4& viewport)
 {
+	lightProbe->GetIrradiance()->TransitionImageLayout(cmdBuffer->GetCurrent(),
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+
 	mIrradianceFilterPass->Begin(cmdBuffer, lightProbe->GetIrradianceFB(), viewport);
 	mIrradianceFilter->Bind(cmdBuffer);
 
@@ -117,6 +135,37 @@ void RenderStageLightProbes::FilterCaptureCube(VKICommandBuffer* cmdBuffer, uint
 
 	mSphere->Draw(cmdBuffer);
 	mIrradianceFilterPass->End(cmdBuffer);
+
+	lightProbe->GetIrradiance()->TransitionImageLayout(cmdBuffer->GetCurrent(),
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+}
+
+
+void RenderStageLightProbes::FilterIrradianceVolume(VKICommandBuffer* cmdBuffer, uint32_t frame,
+	RenderIrradianceVolume* volume, uint32_t probe, const glm::ivec4& viewport)
+{
+	volume->GetIrradiance()->TransitionImageLayout(cmdBuffer->GetCurrent(),
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	mIrradianceFilterPass->Begin(cmdBuffer, volume->GetIrradianceFB(), viewport);
+	mIrradianceArrayFilter->Bind(cmdBuffer);
+	volume->GetRadianceDescSet()->Bind(cmdBuffer, frame, mIrradianceArrayFilter->GetPipeline());
+
+	int32_t layer = probe;
+
+	vkCmdPushConstants(cmdBuffer->GetCurrent(),
+		mIrradianceArrayFilter->GetPipeline()->GetLayout(),
+		VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_GEOMETRY_BIT,
+		0, sizeof(int32_t), &layer);
+
+
+	mSphere->Draw(cmdBuffer);
+
+	mIrradianceFilterPass->End(cmdBuffer);
+
+
+	volume->GetIrradiance()->TransitionImageLayout(cmdBuffer->GetCurrent(),
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 
@@ -125,19 +174,51 @@ void RenderStageLightProbes::Render(VKICommandBuffer* cmdBuffer, uint32_t frame,
 {
 	mLightingShader->Bind(cmdBuffer);
 
+	GUniform::LightProbeConstants constants{};
+
 	for (size_t i = 0; i < lightProbes.size(); ++i)
 	{
-		if (lightProbes[i]->GetDirty() == 2)
+		if (lightProbes[i]->GetDirty() == LIGHT_PROBES_BOUNCES)
 			continue;
 
 		lightProbes[i]->GetLightingDescSet()->Bind(cmdBuffer, frame, mLightingShader->GetPipeline());
 
-		inConstant.ProbePosition = glm::vec4(lightProbes[i]->GetPosition(), 0.0f);
-		inConstant.Radius.x = lightProbes[i]->GetRadius();
+		constants.ProbePosition = glm::vec4(lightProbes[i]->GetPosition(), 0.0f);
+		constants.Radius.x = lightProbes[i]->GetRadius();
 
 		vkCmdPushConstants(cmdBuffer->GetCurrent(), mLightingShader->GetPipeline()->GetLayout(),
 			VK_SHADER_STAGE_FRAGMENT_BIT,
-			0, sizeof(LightProbeConstants), &inConstant);
+			0, sizeof(GUniform::LightProbeConstants), &constants);
+
+
+		vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
+	}
+}
+
+
+void RenderStageLightProbes::Render(VKICommandBuffer* cmdBuffer, uint32_t frame, 
+	const std::vector<RenderIrradianceVolume*>& volumes)
+{
+	mLightingVolumeShader->Bind(cmdBuffer);
+
+	GUniform::IrradianceVolumeConstants constants{};
+
+
+	for (size_t i = 0; i < volumes.size(); ++i)
+	{
+		if (volumes[i]->GetDirty() == LIGHT_PROBES_BOUNCES)
+			continue;
+
+		volumes[i]->GetLightingDescSet()->Bind(cmdBuffer, frame, mLightingVolumeShader->GetPipeline());
+
+		constants.start = glm::vec4(volumes[i]->GetVolumeStart(), 0.0f);
+		constants.extent = glm::vec4(volumes[i]->GetVolumeExtent(), 0.0f);
+		constants.count = glm::vec4(volumes[i]->GetVolumeCount(), 0);
+
+
+		vkCmdPushConstants(cmdBuffer->GetCurrent(), mLightingVolumeShader->GetPipeline()->GetLayout(),
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			0, sizeof(GUniform::IrradianceVolumeConstants), &constants);
 
 
 		vkCmdDraw(cmdBuffer->GetCurrent(), 3, 1, 0, 0);
@@ -180,14 +261,14 @@ void RenderStageLightProbes::SetupCaptureCubePass()
 	mCaptureCubeRenderPass->AddDependency(VK_SUBPASS_EXTERNAL, 0,
 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_ACCESS_MEMORY_READ_BIT,
+		VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
 		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
 	mCaptureCubeRenderPass->AddDependency(0, VK_SUBPASS_EXTERNAL,
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-		VK_ACCESS_MEMORY_READ_BIT);
+		VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT);
 
 	mCaptureCubeRenderPass->CreateRenderPass(mDevice);
 
@@ -251,8 +332,8 @@ void RenderStageLightProbes::SetupIrradianceFilter()
 	mIrradianceFilterPass = UniquePtr<VKIRenderPass>(new VKIRenderPass());
 	mIrradianceFilterPass->SetColorAttachment(0, VK_FORMAT_R16G16B16A16_SFLOAT,
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, true);
 
 
@@ -271,27 +352,58 @@ void RenderStageLightProbes::SetupIrradianceFilter()
 	mIrradianceFilterPass->CreateRenderPass(mDevice);
 
 
-	// Shader...
-	mIrradianceFilter = UniquePtr<RenderShader>(new RenderShader());
-	mIrradianceFilter->SetDomain(ERenderShaderDomain::Mesh);
-	mIrradianceFilter->SetRenderPass(mIrradianceFilterPass.get());
-	mIrradianceFilter->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "SphereVert.spv");
-	mIrradianceFilter->SetShader(ERenderShaderStage::Geometry, SHADERS_DIRECTORY "SphereGeom.spv");
-	mIrradianceFilter->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "IBLFilter_Irradiance.spv");
-	mIrradianceFilter->SetViewport(glm::ivec4(0, 0, size.width, size.height));
-	mIrradianceFilter->SetViewportDynamic(false);
-	mIrradianceFilter->SetBlendingEnabled(0, false);
+	// IBLFilter Shader
+	{
+		mIrradianceFilter = UniquePtr<RenderShader>(new RenderShader());
+		mIrradianceFilter->SetDomain(ERenderShaderDomain::Mesh);
+		mIrradianceFilter->SetRenderPass(mIrradianceFilterPass.get());
+		mIrradianceFilter->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "SphereVert.spv");
+		mIrradianceFilter->SetShader(ERenderShaderStage::Geometry, SHADERS_DIRECTORY "SphereGeom.spv");
+		mIrradianceFilter->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "IBLFilter_Irradiance.spv");
+		mIrradianceFilter->SetViewport(glm::ivec4(0, 0, size.width, size.height));
+		mIrradianceFilter->SetViewportDynamic(true);
+		mIrradianceFilter->SetBlendingEnabled(0, false);
 
-	mIrradianceFilter->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
-		ERenderShaderStage::AllStages);
+		mIrradianceFilter->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::AllStages);
 
-	mIrradianceFilter->AddInput(1, ERenderShaderInputType::Uniform,
-		ERenderShaderStage::Geometry);
+		mIrradianceFilter->AddInput(1, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::Geometry);
 
-	mIrradianceFilter->AddInput(2, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mIrradianceFilter->AddInput(2, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mIrradianceFilter->Create();
+		mIrradianceFilter->Create();
+	}
+
+
+	// IBLFilter Array Shader
+	{
+		mIrradianceArrayFilter = UniquePtr<RenderShader>(new RenderShader());
+		mIrradianceArrayFilter->SetDomain(ERenderShaderDomain::Mesh);
+		mIrradianceArrayFilter->SetRenderPass(mIrradianceFilterPass.get());
+		mIrradianceArrayFilter->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "SphereVert.spv");
+		mIrradianceArrayFilter->SetShader(ERenderShaderStage::Geometry, SHADERS_DIRECTORY "SphereGeom_IrradianceArray.spv");
+		mIrradianceArrayFilter->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "IBLFilter_IrradianceArray.spv");
+		mIrradianceArrayFilter->SetViewport(glm::ivec4(0, 0, size.width, size.height));
+		mIrradianceArrayFilter->SetViewportDynamic(true);
+		mIrradianceArrayFilter->SetBlendingEnabled(0, false);
+
+		mIrradianceArrayFilter->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::AllStages);
+
+		mIrradianceArrayFilter->AddInput(1, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::Geometry);
+
+		mIrradianceArrayFilter->AddInput(2, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mIrradianceArrayFilter->AddPushConstant(0, 0, sizeof(int32_t),
+			ERenderShaderStage::Geometry | ERenderShaderStage::Fragment);
+
+		mIrradianceArrayFilter->Create();
+	}
+	
 
 }
 
@@ -300,42 +412,86 @@ void RenderStageLightProbes::SetupLightingPass()
 {
 	RendererPipeline* rpipeline = Application::Get().GetRenderer()->GetPipeline();
 
-	// Shader...
-	mLightingShader = UniquePtr<RenderShader>(new RenderShader());
-	mLightingShader->SetDomain(ERenderShaderDomain::Screen);
-	mLightingShader->SetRenderPass(rpipeline->GetLightingPass());
-	mLightingShader->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "ScreenVert.spv");
-	mLightingShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "LightingPass_LightProbe.spv");
-	mLightingShader->SetViewport(glm::ivec4(0, 0, 1920.0, 1080.0));
-	mLightingShader->SetViewportDynamic(true);
-	mLightingShader->SetBlendingEnabled(0, true);
-	mLightingShader->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::One,
-		ERenderBlendOp::Add);
 
-	mLightingShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
-		ERenderShaderStage::AllStages);
+	// Probe Lighting Shader.
+	{
+		mLightingShader = UniquePtr<RenderShader>(new RenderShader());
+		mLightingShader->SetDomain(ERenderShaderDomain::Screen);
+		mLightingShader->SetRenderPass(rpipeline->GetLightingPass());
+		mLightingShader->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "ScreenVert.spv");
+		mLightingShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "LightingPass_LightProbe.spv");
+		mLightingShader->SetViewport(glm::ivec4(0, 0, 1920.0, 1080.0));
+		mLightingShader->SetViewportDynamic(true);
+		mLightingShader->SetBlendingEnabled(0, true);
+		mLightingShader->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::One,
+			ERenderBlendOp::Add);
 
-	mLightingShader->AddInput(1, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::AllStages);
 
-	mLightingShader->AddInput(2, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(1, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mLightingShader->AddInput(3, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(2, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mLightingShader->AddInput(4, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(3, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mLightingShader->AddInput(6, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(4, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mLightingShader->AddInput(7, ERenderShaderInputType::ImageSampler,
-		ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(6, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mLightingShader->AddPushConstant(0, 0, sizeof(LightProbeConstants), ERenderShaderStage::Fragment);
+		mLightingShader->AddInput(7, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
 
-	mLightingShader->Create();
+		mLightingShader->AddPushConstant(0, 0, sizeof(GUniform::LightProbeConstants), ERenderShaderStage::Fragment);
+
+		mLightingShader->Create();
+	}
+
+
+
+	// Irradiance Volume Lighting Shader.
+	{
+		mLightingVolumeShader = UniquePtr<RenderShader>(new RenderShader());
+		mLightingVolumeShader->SetDomain(ERenderShaderDomain::Screen);
+		mLightingVolumeShader->SetRenderPass(rpipeline->GetLightingPass());
+		mLightingVolumeShader->SetShader(ERenderShaderStage::Vertex, SHADERS_DIRECTORY "ScreenVert.spv");
+		mLightingVolumeShader->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "LightingPass_IrradianceVolume.spv");
+		mLightingVolumeShader->SetViewport(glm::ivec4(0, 0, 1920.0, 1080.0));
+		mLightingVolumeShader->SetViewportDynamic(true);
+		mLightingVolumeShader->SetBlendingEnabled(0, true);
+		mLightingVolumeShader->SetBlending(0, ERenderBlendFactor::One, ERenderBlendFactor::One,
+			ERenderBlendOp::Add);
+
+		mLightingVolumeShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
+			ERenderShaderStage::AllStages);
+
+		mLightingVolumeShader->AddInput(1, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->AddInput(2, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->AddInput(3, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->AddInput(4, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->AddInput(6, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->AddInput(7, ERenderShaderInputType::ImageSampler,
+			ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->AddPushConstant(0, 0, sizeof(GUniform::IrradianceVolumeConstants), ERenderShaderStage::Fragment);
+
+		mLightingVolumeShader->Create();
+	}
 
 
 }

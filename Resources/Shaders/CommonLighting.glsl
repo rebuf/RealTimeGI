@@ -177,7 +177,7 @@ float ComputeRadianceOcclusion(vec3 v, float ld, in samplerCube Radiance)
 	float bias = 0.01; 
 	
 	float offset = 2.5;
-	float numSamples = 4.0;
+	float numSamples = 3.0;
 	float M1 = 0.0;
 	float M2 = 0.0;
 	
@@ -246,8 +246,10 @@ vec3 LightProbeSampleRay(in vec3 Center, float Radius, in vec3 RayOrg, in vec3 R
 
 
 
+// --- -- - -- --- --- -- - -- --- --- -- - -- --- --- -- - -- --- --- -- - -- --- --- -- - -- --- 
+// Image Based Lighting from light probes.
 
-// Image Based Lighting
+
 vec4 ComputeIBLight(in SurfaceData Surface, in vec3 Pos, in float Radius, in samplerCube Irradiance,
 	in samplerCube Radiance)
 {
@@ -259,10 +261,6 @@ vec4 ComputeIBLight(in SurfaceData Surface, in vec3 Pos, in float Radius, in sam
 	vec4 DiffuseIrradiance = texture(Irradiance, Sample);
 	vec3 Kd = DiffuseIrradiance.rgb * Surface.Albedo;
 
-//	V = normalize(V);
-//	float IrDepth = texture(Radiance, V).a;
-//	Falloff *= IrDepth < (Dist * 0.001 - 0.01) ? 0.01 : 1.0;
-	
 	float Occlusion = ComputeRadianceOcclusion(V, Dist * 0.001, Radiance);
 	Falloff *= Occlusion;
 
@@ -285,6 +283,30 @@ vec4 ComputeIBLight(in SurfaceData Surface, in vec3 Pos, in float Radius, in sam
 
 
 	return vec4(Kd, Falloff);
+}
+
+
+
+
+
+// --- -- - -- --- --- -- - -- --- --- -- - -- --- --- -- - -- --- --- -- - -- --- --- -- - -- --- 
+// Irradiance Volume
+
+struct IrradianceVolumeData
+{
+	vec3 Start;
+	vec3 Extent;
+	ivec3 Count;
+	vec3 GridSize;
+	float GridLen;
+};
+
+
+
+
+ivec3 GetGridCoord(in vec3 Pos, in IrradianceVolumeData IrVolume)
+{
+	return ivec3((Pos - IrVolume.Start + IrVolume.GridSize) / IrVolume.GridSize) - 1;
 }
 
 

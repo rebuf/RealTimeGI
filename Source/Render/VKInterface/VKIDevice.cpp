@@ -99,6 +99,7 @@ void VKIDevice::CreateDevice(VKIInstance* owner)
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
 	deviceFeatures.geometryShader = VK_TRUE;
+	deviceFeatures.imageCubeArray = VK_TRUE;
 
 
 	// Required Ext..

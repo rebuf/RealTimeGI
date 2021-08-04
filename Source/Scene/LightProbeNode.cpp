@@ -25,6 +25,7 @@
 
 #include "LightProbeNode.h"
 #include "Render/RenderData/RenderLight.h"
+#include "Render/RenderData/RenderTypes.h"
 
 
 
@@ -83,7 +84,7 @@ void LightProbeNode::UpdateRenderLightProbe()
 	mRenderLightProbe = UniquePtr<RenderLightProbe>(new RenderLightProbe());
 	mRenderLightProbe->Create();
 
-	mRenderLightProbe->SetDirty(2);
+	mRenderLightProbe->SetDirty(LIGHT_PROBES_BOUNCES);
 	mRenderLightProbe->SetRadius(mRadius);
 	mRenderLightProbe->SetPosition(GetTransform().GetTranslate());
 

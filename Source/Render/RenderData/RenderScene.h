@@ -33,11 +33,13 @@
 
 
 class Scene;
+class Node;
 class IRenderPrimitives;
 class RenderUniform;
 class IRenderShadow;
 class RenderDirShadow;
 class RenderLightProbe;
+class RenderIrradianceVolume;
 class RenderMaterial;
 class RenderSphere;
 class VKICommandBuffer;
@@ -87,6 +89,9 @@ struct RDEnvironment
 
 	// The Sun Color(RGB) & Power(A).
 	glm::vec4 sunColorAndPower;
+
+	// 
+	RenderLightProbe* mSelectedLightProbe;
 
 	//
 	bool isLightProbeEnabled;
@@ -162,9 +167,13 @@ public:
 
 	// Return if the scene has dirty light probes that needs to be updated before rendering.
 	inline bool HasDirtyLightProbes() const { return mHasDirtyLightProbe; }
+	inline bool HasDirtyIrradianceVolume() const { return mHasDirtyIrradianceVolume; }
 
 	// Return the light probes in the render scene.
 	inline const std::vector<RenderLightProbe*>& GetLightProbes() const { return mLightProbes; }
+
+	// Return the irradiance volumes in the render scene.
+	inline const std::vector<RenderIrradianceVolume*>& GetIrradianceVolumes() const { return mIrradianceVolumes; }
 
 	// Return lighting descriptor set used for sun lighting shader.
 	VKIDescriptorSet* GetSunLightDescSet() const { return mSunLightingSet.get(); }
@@ -188,6 +197,12 @@ private:
 
 	// Create the sun render data.
 	void CreateSunData();
+
+	// Add light probe to be rendered with the scene.
+	void AddLightProbe(Node* node);
+
+	// Add irradiance volume to be rendered with the scene.
+	void AddIrradianceVolume(Node* node);
 
 private:
 	// The scene we want to render.
@@ -224,17 +239,17 @@ private:
 	// Light Probes to render in the scene.
 	std::vector<RenderLightProbe*> mLightProbes;
 
+	// Irradiance volumes to render in the scene.
+	std::vector<RenderIrradianceVolume*> mIrradianceVolumes;
+
 	// This render scene include a light probe that needs to be updated.
 	bool mHasDirtyLightProbe;
+	bool mHasDirtyIrradianceVolume;
 
 	// Descriptor Set for sun lighting pass.
 	UniquePtr<VKIDescriptorSet> mSunLightingSet;
 
 	//
 	UniquePtr<RenderSphere> mRSphere;
-
-public:
-	// 
-	RenderLightProbe* mSelectedLightProbe;
 
 };

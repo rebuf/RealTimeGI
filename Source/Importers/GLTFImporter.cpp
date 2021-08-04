@@ -190,7 +190,6 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 		material->SetColorTexture(GLTFLoadImage(tex1, dir));
 		material->SetRoughnessMetallic(GLTFLoadImage(tex2, dir));
 
-
 		// Load Mesh Data...
 		for (size_t is = 0; is < model.meshes.size(); ++is)
 		{
@@ -295,12 +294,19 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 	// Create a new MeshNode and add it to the scene.
 	Ptr<MeshNode> node = Ptr<MeshNode>( new MeshNode() );
 
+	int32_t gcount = 0;
+
 	for (uint32_t i = 0; i < (uint32_t)meshes.size(); ++i)
 	{
+		if (materails[i]->GetColorTexture() == gDefaultWhite)
+			continue;
+
 		meshes[i]->UpdateRenderMesh(); // Create & Update RenderMesh.
 		materails[i]->UpdateRenderMaterial();
-		node->SetMesh(i, meshes[i]);
-		node->SetMaterial(i, materails[i]);
+		node->SetMesh(gcount, meshes[i]);
+		node->SetMaterial(gcount, materails[i]);
+
+		++gcount;
 	}
 
 

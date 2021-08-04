@@ -30,6 +30,7 @@
 
 #include "Scene/Scene.h"
 #include "Scene/LightProbeNode.h"
+#include "Scene/IrradianceVolumeNode.h"
 
 
 #include "GLFW/glfw3.h"
@@ -244,6 +245,99 @@ void Application::Initialize()
 	// ..............................................................
 
 
+#if 1
+	//Box sceneBounds = mMainScene->ComputeBounds();
+	//glm::vec3 vSize = sceneBounds.Extent() * 1.4f;
+	//glm::vec3 vStart = sceneBounds.Center() - vSize * 0.5f;
+	//glm::ivec3 vCount(15, 8, 5);
+
+	Box sceneBounds = mMainScene->ComputeBounds();
+	glm::vec3 vSize = glm::vec3(1400.0, 250.0, 240.0f);
+	glm::vec3 vStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 330.0f);
+	glm::ivec3 vCount(20, 4, 2);
+
+
+
+#define MULTI_VOLUME 0
+
+	// Bottom
+	{
+
+		// 0 ---------
+		{
+			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+			irVolume->SetVolume(vStart + glm::vec3(0.0f, 0.0f, 0.0f), vSize, vCount);
+			irVolume->UpdateIrradianceVolumeNode();
+			mMainScene->AddNode(irVolume);
+		}
+
+#if MULTI_VOLUME
+		glm::vec3 vGSize = vSize;
+		vGSize.y *= 0.9f;
+
+		// 1 ---------
+		{
+			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+			irVolume->SetVolume(vStart + glm::vec3(0.0f, vGSize.y, -15.0f), vSize, vCount);
+			irVolume->UpdateIrradianceVolumeNode();
+			mMainScene->AddNode(irVolume);
+		}
+
+
+		// 2 ---------
+		{
+			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+			irVolume->SetVolume(vStart + glm::vec3(0.0f, -vGSize.y, -15.0f), vSize, vCount);
+			irVolume->UpdateIrradianceVolumeNode();
+			mMainScene->AddNode(irVolume);
+		}
+
+#endif
+	}
+	
+
+#if MULTI_VOLUME
+	// Top
+	{
+
+		// 0 ---------
+		{
+			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+			irVolume->SetVolume(vStart + glm::vec3(0.0f, 0.0f, vSize.z), vSize, vCount);
+			irVolume->UpdateIrradianceVolumeNode();
+			mMainScene->AddNode(irVolume);
+		}
+
+
+		glm::vec3 vGSize = vSize;
+		vGSize.y *= 0.9f;
+
+		// 1 ---------
+		{
+			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+			irVolume->SetVolume(vStart + glm::vec3(0.0f, vGSize.y, -15.0f + vSize.z), vSize, vCount);
+			irVolume->UpdateIrradianceVolumeNode();
+			mMainScene->AddNode(irVolume);
+		}
+
+
+		// 2 ---------
+		{
+			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+			irVolume->SetVolume(vStart + glm::vec3(0.0f, -vGSize.y, -15.0f + vSize.z), vSize, vCount);
+			irVolume->UpdateIrradianceVolumeNode();
+			mMainScene->AddNode(irVolume);
+		}
+	}
+#endif
+
+
+#endif
+
+
+	// ..............................................................
+	// ..............................................................
+
 
 	mAppUser->MatchCamera(mMainScene.get());
 
@@ -284,7 +378,7 @@ int32_t Application::Run()
 
 
 		GISystem::Sleep(24);
-		LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
+		//LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
 	}
 
 

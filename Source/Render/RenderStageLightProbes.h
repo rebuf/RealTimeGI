@@ -37,6 +37,7 @@ class RenderShader;
 class RenderScene;
 class RenderUniform;
 class RenderLightProbe;
+class RenderIrradianceVolume;
 
 
 class VKIDevice;
@@ -73,12 +74,15 @@ public:
 
 	// Render light rrobe into the scene.
 	void Render(VKICommandBuffer* cmdBuffer, uint32_t frame, const std::vector<RenderLightProbe*>& lightProbes);
+	void Render(VKICommandBuffer* cmdBuffer, uint32_t frame, const std::vector<RenderIrradianceVolume*>& volumes);
 
 	// Update the light probe by capturing.
 	void RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe, uint32_t face, const glm::ivec4& viewport);
+	void RenderCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderIrradianceVolume* volume, uint32_t layer, const glm::ivec4& viewport);
 
 	// Pre-Filter Capture Cube map and store the result in lightProbe.
-	void FilterCaptureCube(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe, const glm::ivec4& viewport);
+	void FilterIrradiance(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderLightProbe* lightProbe, const glm::ivec4& viewport);
+	void FilterIrradianceVolume(VKICommandBuffer* cmdBuffer, uint32_t frame, RenderIrradianceVolume* volume, uint32_t probe, const glm::ivec4& viewport);
 
 	// Return the capture cube image.
 	inline VKIImage* GetCaptureCube() { return mCaptureCubeTarget.image.get(); }
@@ -86,9 +90,11 @@ public:
 	// Return Irradiance Filter Render Pass.
 	inline VKIRenderPass* GetIrradianceFilterPass() { return mIrradianceFilterPass.get(); }
 	inline RenderShader* GetIrradianceFilterShader() { return mIrradianceFilter.get(); }
+	inline RenderShader* GetIrradianceArrayFilterShader() { return mIrradianceArrayFilter.get(); }
 
 	// Return the lighting shader used to render light probe.
 	inline RenderShader* GetLightingShader() { return mLightingShader.get(); }
+	inline RenderShader* GetLightingVolumeShader() { return mLightingVolumeShader.get(); }
 
 	// 
 	inline RenderShader* GetVisualizeShader() { return mVisualizeProbeShader.get(); }
@@ -132,9 +138,11 @@ private:
 	// Irradiance Pass.
 	UniquePtr<VKIRenderPass> mIrradianceFilterPass;
 	UniquePtr<RenderShader> mIrradianceFilter;
+	UniquePtr<RenderShader> mIrradianceArrayFilter;
 
 	// Lighting Stage Pass.
 	UniquePtr<RenderShader> mLightingShader;
+	UniquePtr<RenderShader> mLightingVolumeShader;
 
 	//
 	UniquePtr<RenderShader> mVisualizeProbeShader;

@@ -126,6 +126,9 @@ public:
 	// Render The Scene through the entire pipeline.
 	void Render(VKICommandBuffer* cmdBuffer);
 
+	// Should we wait for update before rendering next frame.
+	inline bool IsWaitForUpdate() const { return mWaitForUpdate; }
+
 	// Perfrom a swapchain render step where we copy the final render to the swapchain image.
 	void FinalToSwapchain(VKICommandBuffer* cmdBuffer, uint32_t imgIndex);
 
@@ -170,9 +173,11 @@ private:
 	// Update Scene Light Probes.
 	void UpdateLightProbes(VKICommandBuffer* cmdBuffer);
 
+	// Update Scene Irradiance Volumes.
+	void UpdateIrradianceVolumes(VKICommandBuffer* cmdBuffer);
+
 	// The stage for rendering the scene, the scene is rendered into the 
 	void RenderSceneStage(VKICommandBuffer* cmdBuffer, ERenderSceneStage stage);
-
 
 private:
 	// The vulkan device.
@@ -238,8 +243,11 @@ private:
 	UniquePtr<VKIRenderPass> mDirShadowPass;
 	UniquePtr<VKIRenderPass> mOmniShadowPass;
 
-	//
+	// Render Stage for updating light probes.
 	UniquePtr<RenderStageLightProbes> mStageLightProbes;
 
+	// If last frame has updated data and we should wait for it 
+	//		to be finished before rendering next frame
+	bool mWaitForUpdate;
 };
 

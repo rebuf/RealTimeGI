@@ -39,21 +39,29 @@ layout(location = 0) in GEOM_OUT
 } inFrag;
 
 
-#if defined(PIPELINE_IBL_SPECULAR)
 
+// Constant Input...
+#if defined(PIPELINE_IBL_SPECULAR)
 layout( push_constant ) uniform Constant
 {
 	float Roughness;
-
-} inSpecularFilter;
-
+  int Layer;
+} inConstant;
+#elif defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
+layout( push_constant ) uniform Constant
+{
+  int Layer;
+} inConstant;
 #endif
 
 
 
 // Input...
+#if defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
+layout(binding = 2) uniform samplerCubeArray Environment;
+#else
 layout(binding = 2) uniform samplerCube Environment;
-
+#endif
 
 // Output...
 layout(location = 0) out vec4 FragColor;
@@ -61,7 +69,7 @@ layout(location = 0) out vec4 FragColor;
 
 
 
-#if defined(PIPELINE_IBL_IRRADIANCE)
+#if defined(PIPELINE_IBL_IRRADIANCE) || defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
 
 // Pre-fitler Irradiance:
 //    -
@@ -92,48 +100,21 @@ vec3 ComputeIrradiance(vec3 Normal)
 			vec3 base0 = cos(phi) * right + sin(phi) * up;
 			vec3 sv = cosTheta * Normal + sinTheta * base0; // Sample Vector in the hemisphere
 
+#if defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
+			irradiance += texture(Environment, vec4(sv, inConstant.Layer)).rgb * cosTheta * sinTheta;
+#else
 			irradiance += texture(Environment, sv).rgb * cosTheta * sinTheta;
+#endif
+
 			NumSamples += 1.0;
 		}
 	}
 	
 	return PI * irradiance / NumSamples;
-
-
-
-
-//	// Compute Basis 
-//	vec3 UpVector = abs(Normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-//	vec3 TangentX = normalize( cross( UpVector, Normal ) );
-//	vec3 TangentY = cross( Normal, TangentX );
-//
-//	// Delta
-//	float ThetaDt = 0.01;
-//	float PhiDt = 0.025;
-//
-//	// Compute Irradiance by sampling Environment Texture Hemisphere...
-//	for (float Theta = 0; Theta < TWO_PI; Theta += ThetaDt)
-//	{
-//		for (float Phi = 0; Phi < HALF_PI; Phi += PhiDt)
-//		{
-//			float CosTheta = cos(Theta);
-//			float SinTheta = sin(Theta);
-//			float CosPhi = cos(Phi);
-//			float SinPhi = sin(Phi);
-//			
-//			vec3 Base = CosPhi * (CosTheta * TangentX + SinTheta * TangentY);
-//			vec3 Sample = SinPhi * Normal + Base;
-//
-//			irradiance += texture(Environment, Sample).rgb * CosPhi * SinPhi;
-//			NumSamples += 1.0;
-//		}
-//	}
-//	
-//	
-//	return PI * irradiance / NumSamples;
 }
 
 #endif
+
 
 
 #if defined(PIPELINE_IBL_SPECULAR)
@@ -227,12 +208,12 @@ void main()
 {
 	vec3 Normal = normalize(inFrag.Position);
 
-#if defined(PIPELINE_IBL_IRRADIANCE)
+#if defined(PIPELINE_IBL_IRRADIANCE) || defined(PIPELINE_IBL_IRRADIANCE_ARRAY)
 	FragColor.rgb = ComputeIrradiance(Normal);
 #endif
 
-#if defined(PIPELINE_IBL_SPECULAR)
-	FragColor.rgb = FilterSpecularIBL(inSpecularFilter.Roughness, Normal);
+#if defined(PIPELINE_IBL_SPECULAR) 
+	FragColor.rgb = FilterSpecularIBL(inConstant.Roughness, Normal);
 #endif
 
 	FragColor.a = 1.0;

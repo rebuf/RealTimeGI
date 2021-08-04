@@ -126,6 +126,7 @@ void Scene::RegisterNode(Node* node)
 		break;
 
 	case ENodeType::LightProbe:
+	case ENodeType::IrradianceVolume:
 		AddLight(node);
 		break;
 	}
@@ -145,6 +146,7 @@ void Scene::UnregisterNode(Node* node)
 		break;
 
 	case ENodeType::LightProbe:
+	case ENodeType::IrradianceVolume:
 		RemoveLight(node);
 		break;
 	}

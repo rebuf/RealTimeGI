@@ -83,6 +83,7 @@ RendererPipeline::RendererPipeline()
 	, mSize(0, 0)
 	, mIsRendering(false)
 	, mFrame(0)
+	, mWaitForUpdate(false)
 {
 
 }
@@ -141,6 +142,7 @@ void RendererPipeline::BeginRender(uint32_t frame, RenderScene* rscene, const gl
 {
 	CHECK(!mIsRendering);
 	mIsRendering = true;
+	mWaitForUpdate = false;
 	mFrame = frame;
 	mScene = rscene;
 	mViewport = viewport;
@@ -185,6 +187,8 @@ void RendererPipeline::Render(VKICommandBuffer* cmdBuffer)
 	
 	// Update light probes if needed...
 	UpdateLightProbes(cmdBuffer);
+	UpdateIrradianceVolumes(cmdBuffer);
+
 
 
 
@@ -199,7 +203,12 @@ void RendererPipeline::Render(VKICommandBuffer* cmdBuffer)
 
 	// --- -- - -- ---
 	// The Scene.
-	RenderSceneStage(cmdBuffer, ERenderSceneStage::Normal);
+
+	// Don't render the scene while updating...
+	if (!IsWaitForUpdate())
+	{
+		RenderSceneStage(cmdBuffer, ERenderSceneStage::Normal);
+	}
 
 
 
@@ -249,6 +258,9 @@ void RendererPipeline::RenderSceneStage(VKICommandBuffer* cmdBuffer, ERenderScen
 		// render light probes in the scene.
 		mStageLightProbes->Render(cmdBuffer, mFrame, mScene->GetLightProbes());
 
+		// render irradiance volumes in the scene.
+		mStageLightProbes->Render(cmdBuffer, mFrame, mScene->GetIrradianceVolumes());
+
 		// Sun Light
 		mLightingShader->Bind(cmdBuffer);
 		mScene->GetSunLightDescSet()->Bind(cmdBuffer, mFrame, mLightingShader->GetPipeline());
@@ -272,7 +284,7 @@ void RendererPipeline::RenderSceneStage(VKICommandBuffer* cmdBuffer, ERenderScen
 
 			if (mScene->GetEnvironment().isLightProbeVisualize)
 			{
-				mStageLightProbes->RenderVisualize(cmdBuffer, mFrame, mScene->mSelectedLightProbe);
+				mStageLightProbes->RenderVisualize(cmdBuffer, mFrame, mScene->GetEnvironment().mSelectedLightProbe);
 			}
 		}
 
@@ -362,21 +374,109 @@ void RendererPipeline::UpdateLightProbes(VKICommandBuffer* cmdBuffer)
 		}
 
 
-
 		// Pre-Filter cube map and store it into the probe images to be used later for lighting.
-		mStageLightProbes->FilterCaptureCube(cmdBuffer, mFrame, probe, riViewport);
+		mStageLightProbes->FilterIrradiance(cmdBuffer, mFrame, probe, riViewport);
 	}
 
 	// Clear Dirty Flag.
 	for (RenderLightProbe* probe : lightProbes)
 		probe->SetDirty(probe->GetDirty() - 1);
-		//probe->SetDirty(0);
 
 
 	// Reset Common Block Uniform...
 	mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
 		0, sizeof(GUniform::CommonBlock), &mCommonBlock);
 
+
+	mWaitForUpdate = true;
+}
+
+
+void RendererPipeline::UpdateIrradianceVolumes(VKICommandBuffer* cmdBuffer)
+{
+	// Is scene's irradiance volumes update to date?
+	if (!mScene->HasDirtyIrradianceVolume())
+		return;
+
+
+	glm::vec4 rViewport(0.0f, 0.0f, IRRADIANCE_VOLUME_TARGET_SIZE, IRRADIANCE_VOLUME_TARGET_SIZE);
+	glm::ivec4 riViewport(0, 0, IRRADIANCE_VOLUME_TARGET_SIZE, IRRADIANCE_VOLUME_TARGET_SIZE);
+
+	GUniform::CommonBlock probeCommon = mCommonBlock;
+	probeCommon.viewport = rViewport;
+	probeCommon.mode = COMMON_MODE_REF_CAPTURE;
+
+	// Viewport...
+	VkViewport viewport = { rViewport.x, rViewport.y, rViewport.z, rViewport.w, 0.0f, 1.0f };
+	VkRect2D scissor = { { (int32_t)rViewport.x, (int32_t)rViewport.y },
+		{ (uint32_t)rViewport.z, (uint32_t)rViewport.w } };
+
+	vkCmdSetViewport(cmdBuffer->GetCurrent(), 0, 1, &viewport);
+	vkCmdSetScissor(cmdBuffer->GetCurrent(), 0, 1, &scissor);
+
+
+
+	// iteratet over all the irradiance volumes in the scene and update the dirty ones
+	const std::vector<RenderIrradianceVolume*>& irVolumes = mScene->GetIrradianceVolumes();
+
+
+	for (RenderIrradianceVolume* volume : irVolumes)
+	{
+		// Need Update?
+		if (!volume->GetDirty() != 0)
+			continue;
+
+		uint32_t np = volume->GetNumProbes();
+
+		// Iterate over all probes in the volume.
+		for (uint32_t iP = 0; iP < np; ++iP )
+		{
+			glm::vec3 probePosition = volume->GetProbePosition(iP);
+
+			// Capture the scene for each cubemap face.
+			for (uint32_t iface = 0; iface < 6; ++iface)
+			{
+				probeCommon.viewProjMatrix = Transform::GetCubeViewProj(iface, probePosition);
+				probeCommon.viewProjMatrixInverse = glm::inverse(probeCommon.viewProjMatrix);
+				probeCommon.nearFar = glm::vec2(1.0, 32000.0f);
+
+				mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
+					0, sizeof(GUniform::CommonBlock), &probeCommon);
+
+				// Render The Scene for light probe stae.
+				RenderSceneStage(cmdBuffer, ERenderSceneStage::LightProbe);
+
+				volume->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), 
+					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+
+				// Render the captured scene into the cubemap.
+				mStageLightProbes->RenderCaptureCube(cmdBuffer, mFrame, volume, volume->GetProbeLayer(iP, iface), riViewport);
+
+				volume->GetRadiance()->TransitionImageLayout(cmdBuffer->GetCurrent(), 
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+
+			}
+
+			// Pre-Filter cube map and store it into the probe images to be used later for lighting.
+			mStageLightProbes->FilterIrradianceVolume(cmdBuffer, mFrame, volume, iP, riViewport);
+		}
+
+	}
+	
+
+
+
+	// Clear Dirty Flag.
+	for (RenderIrradianceVolume* volume : irVolumes)
+		volume->SetDirty(volume->GetDirty() - 1);
+
+
+	// Reset Common Block Uniform...
+	mUniforms.common->CmdUpdate(cmdBuffer, mFrame,
+		0, sizeof(GUniform::CommonBlock), &mCommonBlock);
+
+
+	mWaitForUpdate = true;
 }
 
 

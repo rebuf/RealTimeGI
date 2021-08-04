@@ -62,6 +62,7 @@
     <ClInclude Include="Source\Render\VKInterface\VKISync.h" />
     <ClInclude Include="Source\Render\VKInterface\VKITypes.h" />
     <ClInclude Include="Source\Scene\Camera.h" />
+    <ClInclude Include="Source\Scene\IrradianceVolumeNode.h" />
     <ClInclude Include="Source\Scene\LightNode.h" />
     <ClInclude Include="Source\Scene\LightProbeNode.h" />
     <ClInclude Include="Source\Scene\MeshNode.h" />
@@ -112,6 +113,7 @@
     <ClCompile Include="Source\Render\VKInterface\VKIRenderPass.cpp" />
     <ClCompile Include="Source\Render\VKInterface\VKISwapChain.cpp" />
     <ClCompile Include="Source\Render\VKInterface\VKISync.cpp" />
+    <ClCompile Include="Source\Scene\IrradianceVolumeNode.cpp" />
     <ClCompile Include="Source\Scene\LightNode.cpp" />
     <ClCompile Include="Source\Scene\LightProbeNode.cpp" />
     <ClCompile Include="Source\Scene\MeshNode.cpp" />

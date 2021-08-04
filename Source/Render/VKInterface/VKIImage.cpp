@@ -169,7 +169,7 @@ void VKIImage::SetLayers(uint32_t layers, bool isCubeMap)
 
 	if (isCubeMap)
 	{
-		CHECK(mLayers == 6);
+		CHECK((mLayers % 6) == 0);
 		mIsCubeMap = isCubeMap;
 	}
 }

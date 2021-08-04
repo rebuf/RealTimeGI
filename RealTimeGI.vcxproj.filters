@@ -219,6 +219,9 @@
     <ClInclude Include="Source\Core\Material.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Scene\IrradianceVolumeNode.h">
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\Frustum.cpp">
@@ -361,6 +364,9 @@
     </ClCompile>
     <ClCompile Include="Source\Core\Material.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\IrradianceVolumeNode.cpp">
+      <Filter>Source Files\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

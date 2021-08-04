@@ -30,6 +30,7 @@
 #include "Scene/Scene.h"
 #include "Scene/MeshNode.h"
 #include "Scene/LightProbeNode.h"
+#include "Scene/IrradianceVolumeNode.h"
 
 #include "Render/Renderer.h"
 #include "Render/RendererPipeline.h"
@@ -58,6 +59,7 @@ void RDEnvironment::Reset()
 {
 	sunDir = glm::vec4(0.0f);
 	sunColorAndPower = glm::vec4(0.0f);
+	mSelectedLightProbe = nullptr;
 	isLightProbeEnabled = false;
 	isLightProbeHelpers = false;
 	isLightProbeVisualize = false;
@@ -74,7 +76,7 @@ void RDEnvironment::Reset()
 RenderScene::RenderScene()
 	: mScene(nullptr)
 	, mHasDirtyLightProbe(false)
-	, mSelectedLightProbe(nullptr)
+	, mHasDirtyIrradianceVolume(false)
 {
 
 }
@@ -152,10 +154,11 @@ void RenderScene::BuildRenderScene(Scene* scene)
 void RenderScene::Reset()
 {
 	mScene = nullptr;
-	mSelectedLightProbe = nullptr;
 	mHasDirtyLightProbe = false;
+	mHasDirtyIrradianceVolume = false;
 	mEnvironment.Reset();
 	mLightProbes.clear();
+	mIrradianceVolumes.clear();
 
 
 	for (size_t i = 0; i < mPrimitives.size(); ++i)
@@ -206,6 +209,62 @@ void RenderScene::CollectSceneView(Scene* scene)
 }
 
 
+void RenderScene::AddLightProbe(Node* node)
+{
+	if (!mEnvironment.isLightProbeEnabled)
+		return;
+
+	LightProbeNode* probe = static_cast<LightProbeNode*>(node);
+	RenderLightProbe* rprobe = probe->GetRenderLightProbe();
+	mLightProbes.emplace_back(rprobe);
+	mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->GetDirty() != 0;
+
+	if (mEnvironment.isLightProbeHelpers)
+	{
+		AddNewHelper(mRSphere.get(),
+			glm::vec4(rprobe->GetPosition(), 0.0f),
+			glm::vec4(0.1f),
+			probe->IsSelected() ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		if (probe->IsSelected())
+		{
+			mEnvironment.mSelectedLightProbe = rprobe;
+
+			AddNewHelper(mRSphere.get(),
+				glm::vec4(rprobe->GetPosition(), 1.0f),
+				glm::vec4(rprobe->GetRadius() * 0.02f),
+				glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		}
+	}
+
+}
+
+
+void RenderScene::AddIrradianceVolume(Node* node)
+{
+	if (!mEnvironment.isLightProbeEnabled)
+		return;
+
+	IrradianceVolumeNode* irrVolume = static_cast<IrradianceVolumeNode*>(node);
+	RenderIrradianceVolume* rVolume = irrVolume->GetRenderIrradianceVolume();
+	mIrradianceVolumes.emplace_back(rVolume);
+	mHasDirtyIrradianceVolume = mHasDirtyIrradianceVolume || rVolume->GetDirty() != 0;
+
+	if (mEnvironment.isLightProbeHelpers)
+	{
+		uint32_t np = rVolume->GetNumProbes();
+
+		// Iterate over all probes in the volume.
+		for (uint32_t iP = 0; iP < np; ++iP)
+		{
+			glm::vec3 pos = rVolume->GetProbePosition(iP);
+
+			AddNewHelper(mRSphere.get(), glm::vec4(pos, 0.0f), glm::vec4(0.1f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+		}
+	}
+}
+
+
 void RenderScene::CollectSceneLights(Scene* scene)
 {
 	// The Sun...
@@ -234,38 +293,12 @@ void RenderScene::CollectSceneLights(Scene* scene)
 	{
 		switch (node->GetType())
 		{
-		case ENodeType::Light:
+		case ENodeType::LightProbe:
+			AddLightProbe(node);
 			break;
 
-		case ENodeType::LightProbe:
-		{
-			if (mEnvironment.isLightProbeEnabled)
-			{
-				LightProbeNode* probe = static_cast<LightProbeNode*>(node);
-				RenderLightProbe* rprobe = probe->GetRenderLightProbe();
-				mLightProbes.emplace_back(rprobe);
-				mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->GetDirty() != 0;
-
-				if (mEnvironment.isLightProbeHelpers)
-				{
-					AddNewHelper(mRSphere.get(), 
-						glm::vec4(rprobe->GetPosition(), 0.0f), 
-						glm::vec4(0.1f), 
-						probe->IsSelected() ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-					if (probe->IsSelected())
-					{
-						mSelectedLightProbe = rprobe;
-
-						AddNewHelper(mRSphere.get(),
-							glm::vec4(rprobe->GetPosition(), 1.0f),
-							glm::vec4(rprobe->GetRadius() * 0.02f),
-							glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-					}
-				}
-			}
-			
-		}
+		case ENodeType::IrradianceVolume:
+			AddIrradianceVolume(node);
 			break;
 		}
 	}

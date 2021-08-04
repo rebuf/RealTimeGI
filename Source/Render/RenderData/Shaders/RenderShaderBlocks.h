@@ -102,6 +102,8 @@ namespace GUniform
 	};
 
 
+
+
 	// Data used for shadow pass.
 	struct SphereHelperBlock
 	{
@@ -110,6 +112,23 @@ namespace GUniform
 		glm::vec4 color;
 	};
 
+
+
+	// Data LightProbe lighting.
+	struct LightProbeConstants
+	{
+		glm::vec4 ProbePosition;
+		glm::vec4 Radius;
+	};
+
+
+	// Data IrradianceVolume lighting.
+	struct IrradianceVolumeConstants
+	{
+		glm::vec4 start;
+		glm::vec4 extent;
+		glm::vec4 count;
+	};
 
 }
 

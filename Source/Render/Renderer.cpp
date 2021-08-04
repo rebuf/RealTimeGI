@@ -23,6 +23,7 @@
 
 #include "Renderer.h"
 #include "Application.h"
+#include "Core/GISystem.h"
 
 #include "RendererPipeline.h"
 #include "RenderData/RenderScene.h"
@@ -209,6 +210,13 @@ void Renderer::EndRender()
 	mVKData.device->WaitForTransientCmd();
 
 
+	// To avoid the next frame from using previous frame data. we wait when update happen.
+	if (mPipeline->IsWaitForUpdate())
+	{
+		WaitForIdle();
+	}
+
+
 	// Swapchain need to be recreated?
 	if (mVKData.swapchain->NeedRecreate())
 	{
@@ -274,6 +282,10 @@ void Renderer::Render()
   submitInfo.pWaitSemaphores = smWait.data();
 
 	std::array<VkPipelineStageFlags, 1> stageWait = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+	if (mPipeline->IsWaitForUpdate())
+		stageWait[0] = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
   submitInfo.pWaitDstStageMask = stageWait.data();
 
 	std::array<VkSemaphore, 1> smSignal = { smRender->Get() };
@@ -286,15 +298,11 @@ void Renderer::Render()
 		return;
 	}
 
-
 	// Present Rendererd Frame...
 	mVKData.swapchain->PresentImage(imgIndex, smRender);
 
 	// End Pipeline.
 	mPipeline->EndRender();
-
-
-	WaitForIdle();
 }
 
 
@@ -314,7 +322,7 @@ void Renderer::RecordFrameCommands(uint32_t imgIndex)
 	// Pipeline...
 	mPipeline->Render(cmdBuffer);
 
-	// The final render to the swapchain image.
+	// Don't Render To swapchain while updating...
 	mPipeline->FinalToSwapchain(cmdBuffer, imgIndex);
 
 	// End.
@@ -324,7 +332,7 @@ void Renderer::RecordFrameCommands(uint32_t imgIndex)
 
 void Renderer::WaitForIdle()
 {
-	// Wait for all queue to become idle.
+	LOGE("-> WAIT");
 	vkDeviceWaitIdle(mVKData.device->Get());
 
 }

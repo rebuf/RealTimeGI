@@ -33,6 +33,7 @@ AddShader("FRAGMENT", "VisualizePass.glsl")
 
 AddShader("FRAGMENT", "LightingPass.glsl", "-D=LIGHTING_PASS_SUN_LIGHT", "_Sun")
 AddShader("FRAGMENT", "LightingPass.glsl", "-D=LIGHTING_PASS_LIGHT_PROBE", "_LightProbe")
+AddShader("FRAGMENT", "LightingPass.glsl", "-D=LIGHTING_PASS_IRRADIANCE_VOLUME", "_IrradianceVolume")
 
 
 AddShader("FRAGMENT", "CubeCaptureFrag.glsl")
@@ -41,7 +42,9 @@ AddShader("GEOMETRY", "CubeCaptureGeom.glsl")
 AddShader("VERTEX", "SphereVert.glsl")
 AddShader("GEOMETRY", "SphereGeom.glsl")
 AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_IRRADIANCE", "_Irradiance")
-AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_SPECULAR", "_Specular")
+
+AddShader("GEOMETRY", "SphereGeom.glsl", "-D=PIPELINE_IBL_IRRADIANCE_ARRAY", "_IrradianceArray")
+AddShader("FRAGMENT", "IBLFilter.glsl", "-D=PIPELINE_IBL_IRRADIANCE_ARRAY", "_IrradianceArray")
 
 
 AddShader("VERTEX", "SphereVert.glsl", "-D=SPHERE_HELPER_MESH", "_Helper")
