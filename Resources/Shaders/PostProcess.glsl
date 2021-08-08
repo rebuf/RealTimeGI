@@ -28,6 +28,9 @@
 #include "Common.glsl"
 
 
+#define LUMA_FACTORS vec3(0.299, 0.587, 0.114)
+
+
 
 // Vertex Input...
 layout(location = 0) in vec2 TexCoord;
@@ -43,11 +46,51 @@ layout(location = 0) out vec4 FragColor;
 
 
 
+
+
+// Tone Mapping Uncharted2:
+//    - John Hable, Uncharted 2: HDR Lighting, GDC, https://www.gdcvault.com/play/1012351/Uncharted-2-HDR
+//
+vec3 Tonemap(vec3 Color) 
+{
+
+// Approxiate Filmic
+#define UNCHARTED_TONE_OP(x) ( ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F )
+
+	float A = 0.15;
+	float B = 0.50;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.02;
+	float F = 0.30;
+	float W = 11.2;
+	
+	
+	// Exposure Bias.
+	float Exp = 3.5;
+	
+	A = 0.35;
+	C = 0.08;
+	
+	
+	// Apply Tone Mapping...
+	vec3 Tone = UNCHARTED_TONE_OP(Exp * Color);
+	Tone = Tone / UNCHARTED_TONE_OP(W);
+	
+	// Gamma.
+	return pow(Tone, vec3(0.45454545));
+}
+
+
+
+
+
 void main()
 {
 	FragColor = texture(RenderTarget0, TargetTexCoord);
 
-	FragColor.rgb = pow(FragColor.rgb, vec3(0.45454545));
-	FragColor.a = 1.0;
+	FragColor.rgb = Tonemap(FragColor.rgb);
+
+	FragColor.a =  dot(FragColor.rgb, LUMA_FACTORS);
 }
 

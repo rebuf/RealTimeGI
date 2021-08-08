@@ -350,7 +350,7 @@ void AppUser::UpdateImGui()
 
 		ImGui::Text("SUN");
 		isUpdate = ImGui::SliderFloat("YAW", &yaw, 0.0f, 359.0f, "%.3f") || isUpdate;
-		isUpdate = ImGui::SliderFloat("PITCH", &pitch, 0.0f, 97.0f)  || isUpdate;
+		isUpdate = ImGui::SliderFloat("PITCH", &pitch, 0.0f, 88.5f)  || isUpdate;
 		isUpdate = ImGui::ColorEdit3("COLOR", glm::value_ptr(color)) || isUpdate;
 		isUpdate = ImGui::SliderFloat("POWER", &power, 0.0f, 20.0f)  || isUpdate;
 
