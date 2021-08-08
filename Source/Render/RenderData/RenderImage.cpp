@@ -74,6 +74,12 @@ RenderImage::~RenderImage()
 		mSampler->Destroy();
 		mView->Destroy();
 		mImage->Destroy();
+
+		if (mImgBuffer)
+		{
+			mImgBuffer->Destroy();
+			delete mImgBuffer;
+		}
 	}
 }
 
@@ -126,6 +132,7 @@ void RenderImage::DestroyStaging()
 {
 	mImgBuffer->Destroy();
 	delete mImgBuffer;
+	mImgBuffer = nullptr;
 }
 
 

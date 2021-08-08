@@ -88,7 +88,7 @@ vec4 ComputeLightProbe(in SurfaceData Surface, in vec3 Pos, in float Radius,
 	if (dot(V, Surface.N) > 0.0)
 		return vec4(0.0);
 
-	if (inCommon.Mode == COMMON_MODE_REF_CAPTURE)
+	if ((inCommon.Mode & COMMON_MODE_REF_CAPTURE) != 0)
 		return vec4(Kd * 0.5, Falloff * Falloff);
 
 	return vec4(Kd, Falloff * Falloff);

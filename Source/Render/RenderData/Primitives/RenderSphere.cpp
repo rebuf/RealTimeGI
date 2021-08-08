@@ -49,6 +49,7 @@ RenderSphere::~RenderSphere()
 {
 	mVertBuffer->Destroy();
 	mIdxBuffer->Destroy();
+	mSphereUnifrom->Destroy();
 }
 
 

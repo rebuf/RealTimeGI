@@ -80,7 +80,16 @@ void RenderStageLightProbes::Initialize(VKIDevice* device, StageRenderTarget hdr
 
 void RenderStageLightProbes::Destroy()
 {
-
+	mCaptureCubeTarget.Destroy();
+	mCaptureCubeRenderPass->Destroy();
+	mCaptureCubeFB->Destroy();
+	mCaptureCubeShader->Destroy();
+	mIrradianceFilterPass->Destroy();
+	mIrradianceFilter->Destroy();
+	mIrradianceArrayFilter->Destroy();
+	mLightingShader->Destroy();
+	mLightingVolumeShader->Destroy();
+	mVisualizeProbeShader->Destroy();
 }
 
 

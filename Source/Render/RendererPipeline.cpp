@@ -488,7 +488,6 @@ void RendererPipeline::Destroy()
 
 	// Destory Uniforms...
 	mUniforms.common->Destroy();
-	mUniforms.common->Destroy();
 
 
 	// Destory G-Buffer...

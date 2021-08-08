@@ -186,5 +186,9 @@ vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrV
 
 	vec3 Kd = IrValue.rgb * Surface.Albedo;
 	
+
+	if ((inCommon.Mode & COMMON_MODE_REF_CAPTURE) != 0)
+		return vec4(0.0);
+
 	return vec4(IrValue.rgb, 1.0);
 }

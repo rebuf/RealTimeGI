@@ -56,7 +56,7 @@ layout(binding = 4) uniform sampler2D gDepth;
 
 // SUN_LIGHT Input
 #if defined(LIGHTING_PASS_SUN_LIGHT)
-layout(binding = 5) uniform sampler2D SunShadow;
+layout(binding = 5) uniform sampler2DShadow SunShadow;
 
 layout(push_constant) uniform Constants
 {

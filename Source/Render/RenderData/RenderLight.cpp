@@ -386,4 +386,5 @@ void RenderIrradianceVolume::Destroy()
 	mRadianceFB->Destroy();
 
 	mLightingSet->Destroy();
+	mIrradianceFilterSet->Destroy();
 }

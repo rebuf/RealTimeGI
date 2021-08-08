@@ -394,6 +394,7 @@ void AppUser::UpdateProbes()
 {
 	Scene* scene = Application::Get().GetMainScene();
 
+	g_NumOfBounces = 1;
 
 	// Lights & Light Probes...
 	for (auto& node : scene->GetLights())

@@ -102,7 +102,7 @@ void main()
 #else
 	FragAlbedo = texture(ColorTexture, inFrag.TexCoord) * inMaterial.Color;
 	FragBRDF.rg = texture(MetallicRoughnessTexture, inFrag.TexCoord).gb * inMaterial.BRDF.xy;
-	FragNormal = vec4(inFrag.Normal, 1.0);
+	FragNormal = vec4(gl_FrontFacing ? inFrag.Normal : -inFrag.Normal, 0.0);
 	FragEmission = vec4(inMaterial.Emission);
 #endif
 }

@@ -175,8 +175,12 @@ void RenderImGUI::Initialize(Renderer* renderer, AppWindow* wnd)
 
 void RenderImGUI::Destroy()
 {
-  mCmdBuffer->Destroy();
+  vkDestroyDescriptorPool(mDevice->Get(), mPool->handle, nullptr);
 
+  mCmdBuffer->Destroy();
+  mRenderPass->Destroy();
+  ImGui_ImplVulkan_Shutdown();
+  ImGui::DestroyContext();
 }
 
 

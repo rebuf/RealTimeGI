@@ -148,7 +148,7 @@ VKIDescriptorSet::VKIDescriptorSet()
 
 VKIDescriptorSet::~VKIDescriptorSet()
 {
-
+	CHECK(mPool == VK_NULL_HANDLE);
 }
 
 
@@ -212,6 +212,7 @@ void VKIDescriptorSet::Destroy()
 
 	//...
 	mHandles.clear();
+	mPool = VK_NULL_HANDLE;
 }
 
 

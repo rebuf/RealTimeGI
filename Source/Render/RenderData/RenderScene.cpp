@@ -144,8 +144,10 @@ void RenderScene::CreateSunData()
 void RenderScene::Destroy()
 {
 	mTransformUniform->Destroy();
+	mMaterialUniform->Destroy();
 	mSunShadow->Destroy();
 	mSunLightingSet->Destroy();
+	mRSphere.reset();
 }
 
 
@@ -230,12 +232,13 @@ void RenderScene::AddLightProbe(Node* node)
 	LightProbeNode* probe = static_cast<LightProbeNode*>(node);
 	RenderLightProbe* rprobe = probe->GetRenderLightProbe();
 
-	// Invalid LightProbe.
-	if (rprobe->GetDirty() == INVALID_INDEX)
-		return;
+	// Not Invalid LightProbe?
+	if (rprobe->GetDirty() != INVALID_INDEX)
+	{
+		mLightProbes.emplace_back(rprobe);
+		mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->GetDirty() != 0;
+	}
 
-	mLightProbes.emplace_back(rprobe);
-	mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->GetDirty() != 0;
 
 	if (mEnvironment.isLightProbeHelpers)
 	{
@@ -267,13 +270,13 @@ void RenderScene::AddIrradianceVolume(Node* node)
 	IrradianceVolumeNode* irrVolume = static_cast<IrradianceVolumeNode*>(node);
 	RenderIrradianceVolume* rVolume = irrVolume->GetRenderIrradianceVolume();
 
-	// Invalid Irradiance Volume.
-	if (rVolume->GetDirty() == INVALID_INDEX)
-		return;
+	// Not Invalid Irradiance Volume?
+	if (rVolume->GetDirty() != INVALID_INDEX)
+	{
+		mIrradianceVolumes.emplace_back(rVolume);
+		mHasDirtyIrradianceVolume = mHasDirtyIrradianceVolume || rVolume->GetDirty() != 0;
+	}
 
-
-	mIrradianceVolumes.emplace_back(rVolume);
-	mHasDirtyIrradianceVolume = mHasDirtyIrradianceVolume || rVolume->GetDirty() != 0;
 
 	if (mEnvironment.isLightProbeHelpers)
 	{

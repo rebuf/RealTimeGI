@@ -31,7 +31,7 @@
 #define SCALE_UV_WITH_TARGET 1
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
-#define FXAA_QUALITY__PRESET 12
+#define FXAA_QUALITY_PRESET 12
 #include "FXAA_3_11.glsl"
 
 
@@ -53,7 +53,7 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-	vec2 fxaaQualityRcpFrame = 1.0 / textureSize(FinalRender, 0);
+	vec2 fxaaQualityRcpFrame = 1.0 / inCommon.TargetSize.xy;
 
 
 	// This used to be the FXAA_QUALITY__SUBPIX define.

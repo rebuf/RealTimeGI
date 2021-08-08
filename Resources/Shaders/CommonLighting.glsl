@@ -134,12 +134,12 @@ vec3 ComputeBRDFLighting(in SurfaceData Surface, float NDotH, float NDotV, float
 
 
 // Compute Direction Light Shadows.
-float ComputeDirShadow(vec3 P, in sampler2D ShadowMap, in mat4 LightTransform)
+float ComputeDirShadow(vec3 P, in sampler2DShadow ShadowMap, in mat4 LightTransform)
 {
 	vec4 LP = LightTransform * vec4(P, 1.0);
 	LP.xy = LP.xy * 0.5 + 0.5;
 	
-	float Bias = 0.01;
+	float Bias = 0.0025;
 	float ShadowValue = 0.0;
 	
 	// PCF...
@@ -149,8 +149,8 @@ float ComputeDirShadow(vec3 P, in sampler2D ShadowMap, in mat4 LightTransform)
 	{
 		for(float y = -1.5; y < 1.49; y+=1.0)
 		{
-				float S_Depth = texture(ShadowMap, LP.xy + vec2(x * texelSize.x, y * texelSize.y)).r;
-				ShadowValue += S_Depth > (LP.z - Bias) ? 0.0 : 1.0;
+				float S_Depth = texture(ShadowMap, vec3(LP.xy + vec2(x * texelSize.x, y * texelSize.y), (LP.z - Bias))).r;
+				ShadowValue += S_Depth;
 		}    
 	}
 	
@@ -184,7 +184,7 @@ vec3 LightProbeSampleRay(in vec3 Center, float Radius, in vec3 RayOrg, in vec3 R
 
 
 // Compuate Sun from Common Data.
-vec3 ComputeSunLight(in SurfaceData Surface, in sampler2D SunShadow, in mat4 SunTransform)
+vec3 ComputeSunLight(in SurfaceData Surface, in sampler2DShadow SunShadow, in mat4 SunTransform)
 {
 	// The Light Data
 	vec3 L = -inCommon.SunDir.xyz;
@@ -202,7 +202,7 @@ vec3 ComputeSunLight(in SurfaceData Surface, in sampler2D SunShadow, in mat4 Sun
 	float ShadowValue = ComputeDirShadow(Surface.P, SunShadow, SunTransform);
 	
 	// Return the sun lighting
-	return BRDFValue * inCommon.SunColorAndPower.rgb * inCommon.SunColorAndPower.a * (1.0 - ShadowValue);
+	return BRDFValue * inCommon.SunColorAndPower.rgb * inCommon.SunColorAndPower.a * ShadowValue;
 }
 
 

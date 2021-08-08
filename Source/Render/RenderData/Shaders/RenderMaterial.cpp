@@ -201,6 +201,8 @@ void RenderMaterial::DestroyMaterialShaders()
 
 	SHADOW_DIR_SHADER[0]->Destroy();
 	SHADOW_OMNI_SHADER[0]->Destroy();
+
+	SPHERE_HELPER_SHADER->Destroy();
 }
 
 
