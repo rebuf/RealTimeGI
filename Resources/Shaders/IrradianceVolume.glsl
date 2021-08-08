@@ -94,49 +94,23 @@ float SampleIrOcclusion(vec3 v, float ld, float layer, in samplerCubeArray Radia
 }
 
 
-vec4 SampleIrVolumeLayer(in ivec3 GridCoord, out vec3 Probe0Pos, in SurfaceData Surface, 
+vec4 SampleIrVolumeLayer(in ivec3 GridCoord, in SurfaceData Surface, 
 	in IrradianceVolumeData IrVolume, in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
 {
-	Probe0Pos = GetProbePos(GridCoord, IrVolume);
 	GridCoord = clamp(GridCoord, ivec3(0), IrVolume.Count - 1);
+	vec3 Probe0Pos = GetProbePos(GridCoord, IrVolume);
 	int Probe0Index = GetProbeIndex(GridCoord, IrVolume);
 	float SampleRadius = IrVolume.GridLen * 2.0;
 	vec3 Sample0 = LightProbeSampleRay(Probe0Pos, SampleRadius, Surface.P, Surface.N);
 	vec4 Irradiance0 = texture(Irradiance, vec4(Sample0, Probe0Index));
 	
-	vec3 V = Surface.P - Probe0Pos;
-	float Dist = length(V);
-	float Occlusion = SampleIrOcclusion(V, Dist * 0.001, Probe0Index, Radiance);
+	vec3 L = Surface.P - Probe0Pos;
+	float Dist = length(L);
+	//float Occlusion = SampleIrOcclusion(V, Dist * 0.001, Probe0Index, Radiance);
+	float Occlusion = 1.0;
 	
-	if (dot(V, Surface.N) > 0.0)
-		Occlusion *= abs(dot(V, Surface.N) * 0.05);
+	L /= Dist;
+	float NDotL = max(dot(-L, Surface.N), 0.0);
 
-	return vec4(Irradiance0.rgb, 1.0);
-}
-
-
-
-vec4 SampleIrradianceVolume(in ivec3 GridCoord, in vec3 DiffCoord, out vec3 Probe0Pos, in SurfaceData Surface, 
-	in IrradianceVolumeData IrVolume, in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
-{
-	ivec3 Probe0GridCoord = GridCoord + ivec3(0,           0,           DiffCoord.z);
-	ivec3 Probe1GridCoord = GridCoord + ivec3(DiffCoord.x, 0,           DiffCoord.z);
-	ivec3 Probe2GridCoord = GridCoord + ivec3(0,           DiffCoord.y, DiffCoord.z);
-	ivec3 Probe3GridCoord = GridCoord + ivec3(DiffCoord.x, DiffCoord.y, DiffCoord.z);
-
-
-	vec3 Probe1Pos, Probe2Pos, Probe3Pos;
-	vec4 Irradiance0 = SampleIrVolumeLayer(Probe0GridCoord, Probe0Pos, Surface, IrVolume, Irradiance, Radiance);
-	vec4 Irradiance1 = SampleIrVolumeLayer(Probe1GridCoord, Probe1Pos, Surface, IrVolume, Irradiance, Radiance);
-	vec4 Irradiance2 = SampleIrVolumeLayer(Probe2GridCoord, Probe2Pos, Surface, IrVolume, Irradiance, Radiance);
-	vec4 Irradiance3 = SampleIrVolumeLayer(Probe3GridCoord, Probe3Pos, Surface, IrVolume, Irradiance, Radiance);
-
-	vec2 Delta = Probe3Pos.xy - Probe0Pos.xy;
-	vec2 Alpha = (Surface.P.xy - Probe0Pos.xy) / Delta;
-
-	vec4 IrLerp0 = mix(Irradiance0, Irradiance1, Alpha.x);
-	vec4 IrLerp1 = mix(Irradiance2, Irradiance3, Alpha.x);
-	vec4 IrValue  = mix(IrLerp0, IrLerp1, Alpha.y);
-
-	return IrValue;
+	return vec4(Irradiance0.rgb, Occlusion);
 }

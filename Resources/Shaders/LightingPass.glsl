@@ -97,6 +97,50 @@ layout(push_constant) uniform Constants
 
 
 
+vec3 SampleIrradianceVolume(in ivec3 GridCoord, in vec3 DiffCoord, in SurfaceData Surface, 
+	in IrradianceVolumeData IrVolume, in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
+{
+	// Compute 8 Neighbour Probes Coordinate...
+	ivec3 ProbeOffset[8];
+	ProbeOffset[0] = ivec3(0,           0,           0.0);
+	ProbeOffset[1] = ivec3(DiffCoord.x, 0,           0.0);
+	ProbeOffset[2] = ivec3(0,           DiffCoord.y, 0.0);
+	ProbeOffset[3] = ivec3(DiffCoord.x, DiffCoord.y, 0.0);
+
+	ProbeOffset[4] = ivec3(0,           0,           DiffCoord.z);
+	ProbeOffset[5] = ivec3(DiffCoord.x, 0,           DiffCoord.z);
+	ProbeOffset[6] = ivec3(0,           DiffCoord.y, DiffCoord.z);
+	ProbeOffset[7] = ivec3(DiffCoord.x, DiffCoord.y, DiffCoord.z);
+
+	// Compute Trilinear Factors...
+	vec3 Probe0Pos = GetProbePos(GridCoord + ProbeOffset[0], IrVolume);
+	vec3 Probe7Pos = GetProbePos(GridCoord + ProbeOffset[7], IrVolume);
+	vec3 Delta =  Probe7Pos - Probe0Pos;
+	vec3 Alpha = (Surface.P - Probe0Pos) / Delta;
+
+
+	// Accumulated Results.
+	vec3 IrValue = vec3(0.0);
+	float IrAlpha = 0.0;
+
+	// Sample 8 Neighbours and interpolate.
+	for (int iP = 0; iP < 8; ++iP)
+	{
+		ivec3 ProbeGridCoord = GridCoord + ProbeOffset[iP];
+		vec4 IrSample = SampleIrVolumeLayer(ProbeGridCoord, Surface, IrVolume, Irradiance, Radiance);
+
+		// Apply Interpolation factors.
+		vec3 ProbeAlpha = mix(1.0 - Alpha, Alpha, abs(ProbeOffset[iP]));
+		IrSample.a *= ProbeAlpha.x * ProbeAlpha.y * ProbeAlpha.z;
+		IrSample.a = max(IrSample.a, 0.00001);
+
+		IrValue += IrSample.rgb * IrSample.a;
+		IrAlpha += IrSample.a;
+	}
+
+	return IrValue / IrAlpha;
+}
+
 
 vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrVolume,
 	in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
@@ -119,24 +163,18 @@ vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrV
 	LocalP.z = (LocalP.z < Atten.z) ? LocalP.z : 1.0 - LocalP.z;
 	LocalP = LocalP / Atten;
 
+
+	// Smooth Attenuation factor used for blending between volumes.
 	vec3 IrSmooth = vec3(1.0);
 	IrSmooth = smoothstep(0.0, 1.0, LocalP);
 
-	// Lighting Surface...
+
+	// Lighting Surface using Irradiance Volume...
 	ivec3 GridCoord = GetGridCoord(Surface.P, IrVolume);
 	vec3 GridPos = GetProbePos(GridCoord, IrVolume);
 	vec3 DiffCoord = sign(Surface.P - GridPos);
 
-	vec3 Probe0Pos;
-	vec3 Probe1Pos;
-	vec4 IrLerp0 = SampleIrradianceVolume(GridCoord, vec3(DiffCoord.xy, 0.0), Probe0Pos, Surface, IrVolume, Irradiance, Radiance);
-	vec4 IrLerp1 = SampleIrradianceVolume(GridCoord, DiffCoord, Probe1Pos, Surface, IrVolume, Irradiance, Radiance);
-
-
-	float Delta = Probe1Pos.z - Probe0Pos.z;
-	float Alpha = (Surface.P.z - Probe0Pos.z) / Delta;
-	vec4 IrValue  = mix(IrLerp0, IrLerp1, Alpha);
-
+	vec3 IrValue = SampleIrradianceVolume(GridCoord, DiffCoord, Surface, IrVolume, Irradiance, Radiance);
 	vec3 Kd = IrValue.rgb * Surface.Albedo;
 
 	if ((inCommon.Mode & COMMON_MODE_REF_CAPTURE) != 0)
