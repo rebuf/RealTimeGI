@@ -116,3 +116,17 @@ vec4 VisualizeCubeMap(samplerCube Map, vec2 Coord)
 	vec3 n = vec3(CosPhi * cos(Theta), CosPhi * sin(Theta), sin(Phi));
 	return texture(Map, n.xyz);
 }
+
+
+// Visualize a layer of CubeMapArray from screen coordiante.
+vec4 VisualizeCubeMapArray(in samplerCubeArray Map, vec2 Coord, float layer)
+{
+	Coord.y = 1.0 - Coord.y;
+
+	float Theta  = Coord.x * PI * 2.0;
+	float Phi    = (Coord.y - 0.5) * PI;
+	float CosPhi = cos(Phi);	
+
+	vec3 n = vec3(CosPhi * cos(Theta), CosPhi * sin(Theta), sin(Phi));
+	return texture(Map, vec4(n.xyz, layer));
+}

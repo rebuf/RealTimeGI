@@ -476,6 +476,9 @@ void RenderStageLightProbes::SetupLightingPass()
 		mLightingVolumeShader->SetBlending(0, ERenderBlendFactor::One, ERenderBlendFactor::One,
 			ERenderBlendOp::Add);
 
+		mLightingVolumeShader->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::OneMinusSrcAlpha,
+			ERenderBlendOp::Add);
+
 		mLightingVolumeShader->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
 			ERenderShaderStage::AllStages);
 

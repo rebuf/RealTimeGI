@@ -94,6 +94,58 @@ layout(push_constant) uniform Constants
 	vec4 Extent;
 	vec4 Count;
 } inConstant;
+
+
+
+
+vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrVolume,
+	in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
+{
+	// Clip & Attinuate...
+	vec3 Atten = vec3(0.0);
+	vec3 AttenOffset = IrVolume.Extent * Atten;
+	
+	vec3 LocalP = Surface.P - (IrVolume.Start - AttenOffset);
+	LocalP = LocalP / (IrVolume.Extent + AttenOffset * 2.0);
+
+	if ( LocalP.x < 0.0 || LocalP.x > 1.0  
+		|| LocalP.y < 0.0 || LocalP.y > 1.0 
+		|| LocalP.z < 0.0 || LocalP.z > 1.0 )
+		return vec4(0.0);
+
+	Atten = max(Atten, 0.00001);
+	LocalP.x = (LocalP.x < Atten.x) ? LocalP.x : 1.0 - LocalP.x;
+	LocalP.y = (LocalP.y < Atten.y) ? LocalP.y : 1.0 - LocalP.y;
+	LocalP.z = (LocalP.z < Atten.z) ? LocalP.z : 1.0 - LocalP.z;
+	LocalP = LocalP / Atten;
+
+	vec3 IrSmooth = vec3(1.0);
+	IrSmooth = smoothstep(0.0, 1.0, LocalP);
+
+	// Lighting Surface...
+	ivec3 GridCoord = GetGridCoord(Surface.P, IrVolume);
+	vec3 GridPos = GetProbePos(GridCoord, IrVolume);
+	vec3 DiffCoord = sign(Surface.P - GridPos);
+
+	vec3 Probe0Pos;
+	vec3 Probe1Pos;
+	vec4 IrLerp0 = SampleIrradianceVolume(GridCoord, vec3(DiffCoord.xy, 0.0), Probe0Pos, Surface, IrVolume, Irradiance, Radiance);
+	vec4 IrLerp1 = SampleIrradianceVolume(GridCoord, DiffCoord, Probe1Pos, Surface, IrVolume, Irradiance, Radiance);
+
+
+	float Delta = Probe1Pos.z - Probe0Pos.z;
+	float Alpha = (Surface.P.z - Probe0Pos.z) / Delta;
+	vec4 IrValue  = mix(IrLerp0, IrLerp1, Alpha);
+
+	vec3 Kd = IrValue.rgb * Surface.Albedo;
+
+	if ((inCommon.Mode & COMMON_MODE_REF_CAPTURE) != 0)
+		return vec4(0.0);
+
+	return vec4(IrValue.rgb, 1.0);
+}
+
+
 #endif
 
 

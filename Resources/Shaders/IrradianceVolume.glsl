@@ -100,7 +100,7 @@ vec4 SampleIrVolumeLayer(in ivec3 GridCoord, out vec3 Probe0Pos, in SurfaceData 
 	Probe0Pos = GetProbePos(GridCoord, IrVolume);
 	GridCoord = clamp(GridCoord, ivec3(0), IrVolume.Count - 1);
 	int Probe0Index = GetProbeIndex(GridCoord, IrVolume);
-	float SampleRadius = IrVolume.GridLen * 1.2;
+	float SampleRadius = IrVolume.GridLen * 2.0;
 	vec3 Sample0 = LightProbeSampleRay(Probe0Pos, SampleRadius, Surface.P, Surface.N);
 	vec4 Irradiance0 = texture(Irradiance, vec4(Sample0, Probe0Index));
 	
@@ -139,56 +139,4 @@ vec4 SampleIrradianceVolume(in ivec3 GridCoord, in vec3 DiffCoord, out vec3 Prob
 	vec4 IrValue  = mix(IrLerp0, IrLerp1, Alpha.y);
 
 	return IrValue;
-}
-
-
-vec4 VisualizeCubeMapArray(in samplerCubeArray Map, vec2 Coord, float layer)
-{
-	Coord.y = 1.0 - Coord.y;
-
-	float Theta  = Coord.x * PI * 2.0;
-	float Phi    = (Coord.y - 0.5) * PI;
-	float CosPhi = cos(Phi);	
-
-	vec3 n = vec3(CosPhi * cos(Theta), CosPhi * sin(Theta), sin(Phi));
-	return texture(Map, vec4(n.xyz, layer));
-}
-
-
-vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrVolume,
-	in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
-{
-	// The Grid cell the surface point is in.
-	ivec3 GridCoord = GetGridCoord(Surface.P, IrVolume);
-
-	// Out of Volume Bounds?
-	if ( GridCoord.x < 0 
-	  || GridCoord.y < 0 
-	  || GridCoord.z < 0 
-	  || GridCoord.x > IrVolume.Count.x - 1 
-	  || GridCoord.y > IrVolume.Count.y - 1 
-	  || GridCoord.z > IrVolume.Count.z - 1 )
-		return vec4(0.0);
-
-
-	vec3 GridPos = GetProbePos(GridCoord, IrVolume);
-	vec3 DiffCoord = sign(Surface.P - GridPos);
-
-	vec3 Probe0Pos;
-	vec3 Probe1Pos;
-	vec4 IrLerp0 = SampleIrradianceVolume(GridCoord, vec3(DiffCoord.xy, 0.0), Probe0Pos, Surface, IrVolume, Irradiance, Radiance);
-	vec4 IrLerp1 = SampleIrradianceVolume(GridCoord, DiffCoord, Probe1Pos, Surface, IrVolume, Irradiance, Radiance);
-
-
-	float Delta = Probe1Pos.z - Probe0Pos.z;
-	float Alpha = (Surface.P.z - Probe0Pos.z) / Delta;
-	vec4 IrValue  = mix(IrLerp0, IrLerp1, Alpha);
-
-	vec3 Kd = IrValue.rgb * Surface.Albedo;
-	
-
-	if ((inCommon.Mode & COMMON_MODE_REF_CAPTURE) != 0)
-		return vec4(0.0);
-
-	return vec4(IrValue.rgb, 1.0);
 }
