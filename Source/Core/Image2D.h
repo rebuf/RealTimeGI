@@ -170,6 +170,10 @@ public:
 	// Return image data.
 	inline const Image2DData& GetImgData() const { return mData; }
 
+	// Set/Get GenMips flag.
+	inline void SetGenMips(bool value) { mIsGenMips = value; }
+	inline bool IsGenMips() const { return mIsGenMips; }
+
 private:
 	// The image size.
 	glm::ivec2 mSize;
@@ -185,5 +189,8 @@ private:
 
 	// The image data color space.
 	bool mIsSRGB;
+
+	// if true will generate mipmaps for this image.
+	bool mIsGenMips;
 };
 

@@ -105,6 +105,9 @@ public:
 	// Update image content from buffer.
 	void UpdateImage(VkCommandBuffer cmd, VKIBuffer* buffer);
 
+	// Generate Mipmaps for this image.
+	void GeneratMipmaps(VkCommandBuffer cmd);
+
 
 private:
 	// Allocate Device Memory for the created vulkan image.

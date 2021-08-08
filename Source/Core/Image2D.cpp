@@ -68,6 +68,7 @@ void GetImgPixelInfo(EImageFormat format, int32_t& outBPP)
 Image2D::Image2D()
 	: mFormat(EImageFormat::None)
 	, mIsSRGB(true)
+	, mIsGenMips(false)
 {
 
 }

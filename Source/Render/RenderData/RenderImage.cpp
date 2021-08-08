@@ -33,6 +33,9 @@
 #include "Render/VKInterface/VKIImage.h"
 
 
+#include <cmath>
+
+
 
 
 VkFormat ToVKFormat(EImageFormat format, bool isSRGB)
@@ -88,7 +91,8 @@ void RenderImage::SetData(Image2D* img)
 {
 	mDevice = Application::Get().GetRenderer()->GetVKDevice();
 	VkExtent2D size = { (uint32_t)img->GetSize().x, (uint32_t)img->GetSize().y };
-
+	uint32_t mipLevels = !img->IsGenMips() ? 1
+		: static_cast<uint32_t>(std::floor(std::log2(std::max(size.width, size.height)))) + 1;
 
 	// Pixel Info...
 	VkDeviceSize imgSize = img->GetImgData().GetSize();
@@ -112,8 +116,8 @@ void RenderImage::SetData(Image2D* img)
 
 	mImage = UniquePtr<VKIImage>(new VKIImage());
 	mImage->SetImageInfo(VK_IMAGE_TYPE_2D, ToVKFormat(img->GetFormat(), img->IsSRGB()), size, VK_IMAGE_LAYOUT_UNDEFINED);
-	mImage->SetMipLevels(1);
-	mImage->SetUsage(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+	mImage->SetMipLevels(mipLevels);
+	mImage->SetUsage(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
 	mImage->Create(mDevice);
 
 
@@ -122,7 +126,11 @@ void RenderImage::SetData(Image2D* img)
 	
 	mImage->TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 	mImage->UpdateImage(cmd, mImgBuffer);
-	mImage->TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	if (mipLevels > 1)
+		mImage->GeneratMipmaps(cmd);
+	else
+		mImage->TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	mDevice->EndTransientCmd(cmd, Delegate<>::CreateMemberRaw(this, &RenderImage::DestroyStaging));
 }
@@ -149,5 +157,7 @@ void RenderImage::CreateSampler()
 	mSampler = UniquePtr<VKISampler>(new VKISampler());
 	mSampler->SetAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT);
 	mSampler->SetFilter(VK_FILTER_LINEAR, VK_FILTER_LINEAR);
+	mSampler->SetMipmap(mImage->GetMipLevels() > 1 ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST,
+		0.0, (float)mImage->GetMipLevels(), 0.0f);
 	mSampler->CreateSampler(mDevice);
 }

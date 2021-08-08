@@ -128,6 +128,7 @@ Ptr<Image2D> GLTFLoadImage(const tinygltf::TextureInfo& imgInfo, const std::stri
 				if (!isLoaded || img->GetSize().x == 0 || img->GetSize().y == 0)
 					img = nullptr;
 
+				img->SetGenMips(true);
 				gImagesMap[uri] = img;
 			}
 
