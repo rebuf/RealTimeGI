@@ -84,8 +84,15 @@ void LightProbeNode::UpdateRenderLightProbe()
 	mRenderLightProbe = UniquePtr<RenderLightProbe>(new RenderLightProbe());
 	mRenderLightProbe->Create();
 
-	mRenderLightProbe->SetDirty(LIGHT_PROBES_BOUNCES);
+	mRenderLightProbe->SetDirty(INVALID_INDEX);
 	mRenderLightProbe->SetRadius(mRadius);
 	mRenderLightProbe->SetPosition(GetTransform().GetTranslate());
+
+}
+
+
+void LightProbeNode::SetDirty()
+{
+	mRenderLightProbe->SetDirty(LIGHT_PROBES_BOUNCES);
 
 }

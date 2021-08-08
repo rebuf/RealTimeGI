@@ -47,7 +47,7 @@
 
 
 // List of supported gltf extensions.
-static const std::array<std::string, 1> GLTF_EXT_LIST = { "gltf" };
+static const std::array<std::string, 1> GLTF_EXT_LIST = { ".gltf" };
 
 
 std::vector<std::string> gImagesUri;
@@ -105,12 +105,12 @@ bool GLTFImporter::IsSupported(const std::string& file)
 
 
 
-std::shared_ptr<Image2D> GLTFLoadImage(const tinygltf::TextureInfo& imgInfo, const std::string& dir)
+Ptr<Image2D> GLTFLoadImage(const tinygltf::TextureInfo& imgInfo, const std::string& dir)
 {
 	if (imgInfo.index < gImagesUri.size() && imgInfo.index >= 0)
 	{
 		std::string uri = gImagesUri[imgInfo.index];
-		std::shared_ptr<Image2D> img;
+		Ptr<Image2D> img;
 
 		if (!uri.empty())
 		{
@@ -136,14 +136,7 @@ std::shared_ptr<Image2D> GLTFLoadImage(const tinygltf::TextureInfo& imgInfo, con
 		}
 	}
 
-
-	if (!gDefaultWhite)
-	{
-		gDefaultWhite = std::shared_ptr<Image2D>(new Image2D());
-		gDefaultWhite->LoadImage(RESOURCES_DIRECTORY "Textures/Default_White.png");
-	}
-
-	return gDefaultWhite;
+	return nullptr;
 }
 
 
@@ -189,6 +182,18 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 		const tinygltf::TextureInfo tex2 = mat.pbrMetallicRoughness.metallicRoughnessTexture;
 		material->SetColorTexture(GLTFLoadImage(tex1, dir));
 		material->SetRoughnessMetallic(GLTFLoadImage(tex2, dir));
+
+		material->SetColor(glm::vec4(
+			mat.pbrMetallicRoughness.baseColorFactor[0],
+			mat.pbrMetallicRoughness.baseColorFactor[1],
+			mat.pbrMetallicRoughness.baseColorFactor[2],
+			mat.pbrMetallicRoughness.baseColorFactor[3]));
+
+		material->SetEmission(glm::vec4(
+			mat.emissiveFactor[0],
+			mat.emissiveFactor[1],
+			mat.emissiveFactor[2], 0.0f));
+
 
 		// Load Mesh Data...
 		for (size_t is = 0; is < model.meshes.size(); ++is)
@@ -278,11 +283,19 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 
 
 				// Indices...
-				for (size_t i = 0; i < accIndex.count; ++i)
+				for (size_t i = 0; i < accIndex.count; i+=3)
 				{
-					uint32_t index = indices_i == nullptr ? indices_s[i] : indices_i[i];
-					index = indicesMap[index];
-					mesh->GetIndices().push_back(index);
+					uint32_t index0 = indices_i == nullptr ? indices_s[i+0] : indices_i[i+0];
+					uint32_t index1 = indices_i == nullptr ? indices_s[i+1] : indices_i[i+1];
+					uint32_t index2 = indices_i == nullptr ? indices_s[i+2] : indices_i[i+2];
+
+					index0 = indicesMap[index0];
+					index1 = indicesMap[index1];
+					index2 = indicesMap[index2];
+
+					mesh->GetIndices().push_back(index0);
+					mesh->GetIndices().push_back(index2);
+					mesh->GetIndices().push_back(index1);
 				}
 
 

@@ -54,6 +54,7 @@ AppWindow* AppWindow::Create(const std::string& title, const glm::ivec2& size)
 
 	// Callbacks...
 	glfwSetFramebufferSizeCallback(newWnd->glfw_window, &AppWindow::glfw_FramebufferResizeCallback);
+	glfwSetDropCallback(newWnd->glfw_window, &AppWindow::glfw_SetDropCallback);
 
 	return newWnd;
 }
@@ -65,10 +66,29 @@ void AppWindow::glfw_FramebufferResizeCallback(GLFWwindow* wnd, int x, int y)
 	appWnd->FramebufferResize(x, y);
 }
 
+void AppWindow::glfw_SetDropCallback(GLFWwindow* wnd, int num, const char** paths)
+{
+	AppWindow* appWnd = (AppWindow*)glfwGetWindowUserPointer(wnd);
+	appWnd->FileDrop(num, paths);
+}
+
+
 
 void AppWindow::FramebufferResize(int32_t x, int32_t y)
 {
 
+}
+
+
+void AppWindow::FileDrop(int32_t num, const char** paths)
+{
+	if (num < 1)
+		return;
+
+	std::string path = paths[0];
+
+	if (FileDropEvent.IsValid())
+		FileDropEvent.Execute(path);
 }
 
 

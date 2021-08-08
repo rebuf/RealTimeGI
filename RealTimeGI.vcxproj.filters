@@ -46,6 +46,9 @@
     <Filter Include="Source Files\Render\RenderData\Shaders">
       <UniqueIdentifier>{d12f9a87-b7ad-4d56-8008-1581a7f038cf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\RenderData\UI">
+      <UniqueIdentifier>{1e1bce5a-fd11-4862-bc17-f01d28820d1b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Core.h">
@@ -222,6 +225,9 @@
     <ClInclude Include="Source\Scene\IrradianceVolumeNode.h">
       <Filter>Source Files\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\UI\RenderImGUI.h">
+      <Filter>Source Files\Render\RenderData\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\Frustum.cpp">
@@ -368,6 +374,9 @@
     <ClCompile Include="Source\Scene\IrradianceVolumeNode.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\UI\RenderImGUI.cpp">
+      <Filter>Source Files\Render\RenderData\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\FinalBlit.glsl">
@@ -414,6 +423,12 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\VisualizePass.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\IrradianceVolume.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\LightProbe.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

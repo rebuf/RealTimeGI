@@ -27,6 +27,7 @@
 
 
 #include "Core/Core.h"
+#include "Core/Delegate.h"
 #include "glm/vec2.hpp"
 
 
@@ -74,14 +75,21 @@ public:
 private:
 	// GLFW Window Callbacks...
 	static void glfw_FramebufferResizeCallback(GLFWwindow* wnd, int x, int y);
+	static void glfw_SetDropCallback(GLFWwindow* wnd, int num, const char** paths);
 
 	// Called when the window fraebuffer get resized.
 	void FramebufferResize(int32_t x, int32_t y);
+
+	// Called whe file path is darg & droped on window.
+	void FileDrop(int32_t num, const char** paths);
 
 private:
 	// GLFW Window Handle.
 	GLFWwindow* glfw_window;
 
+public:
+	// Event exectued when file drag drop happen.
+	Delegate<const std::string&> FileDropEvent;
 };
 
 

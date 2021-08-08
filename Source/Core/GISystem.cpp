@@ -33,7 +33,7 @@
 
 
 
-std::string GISystem::GetFileExtension(const std::string& file, bool withDot)
+std::string GISystem::GetFileExtension(const std::string& file)
 {
 	size_t idx = file.find_last_of('.');
 	if (idx == std::string::npos)

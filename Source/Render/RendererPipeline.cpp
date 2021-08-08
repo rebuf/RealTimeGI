@@ -634,6 +634,12 @@ void RendererPipeline::SetupGBufferPass()
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_ATTACHMENT_LOAD_OP_CLEAR, true);
 
+	mGBufferPass->SetColorAttachment(3, mHDRTarget[0].image->GetFormat(),
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+		VK_ATTACHMENT_LOAD_OP_CLEAR, true);
+
 	mGBufferPass->SetDepthAttachment(mDepthTarget.image->GetFormat(),
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 		VK_IMAGE_LAYOUT_UNDEFINED,
@@ -655,11 +661,12 @@ void RendererPipeline::SetupGBufferPass()
 		VK_DEPENDENCY_BY_REGION_BIT);
 
 
-	std::vector<VkClearValue> clearValues(4);
+	std::vector<VkClearValue> clearValues(5);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	clearValues[1].color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	clearValues[2].color = { 0.0f, 0.0f, 0.0f, 0.0f };
-	clearValues[3].depthStencil = { 1.0f, 0};
+	clearValues[3].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+	clearValues[4].depthStencil = { 1.0f, 0};
 	mGBufferPass->SetClearValues(clearValues);
 
 	mGBufferPass->CreateRenderPass(mDevice);
@@ -670,7 +677,8 @@ void RendererPipeline::SetupGBufferPass()
 	mGBufferFB->SetImgView(0, mAlbedoTarget.view.get());
 	mGBufferFB->SetImgView(1, mBRDFTarget.view.get());
 	mGBufferFB->SetImgView(2, mNormalsTarget.view.get());
-	mGBufferFB->SetImgView(3, mDepthTarget.view.get());
+	mGBufferFB->SetImgView(3, mHDRTarget[0].view.get());
+	mGBufferFB->SetImgView(4, mDepthTarget.view.get());
 	mGBufferFB->CreateFrameBuffer(mDevice, mGBufferPass.get());
 
 }
@@ -733,9 +741,9 @@ void RendererPipeline::SetupLightingPass()
 
 	mLightingPass->SetColorAttachment(0, mHDRTarget[0].image->GetFormat(), 
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_ATTACHMENT_LOAD_OP_CLEAR, true);
+		VK_ATTACHMENT_LOAD_OP_LOAD, true);
 
 	mLightingPass->AddDependency(VK_SUBPASS_EXTERNAL, 0,
 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,

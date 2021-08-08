@@ -31,6 +31,7 @@
 
 #include "Application.h"
 #include "Core/Material.h"
+#include "Core/Image2D.h"
 
 
 #include "Render/VKInterface/VKISwapChain.h"
@@ -40,11 +41,13 @@
 
 
 
+#include <array>
+
+
 
 Ptr<RenderShader> RenderMaterial::OPAQUE_SHADER;
 Ptr<RenderShader> RenderMaterial::SHADOW_DIR_SHADER[2];
 Ptr<RenderShader> RenderMaterial::SHADOW_OMNI_SHADER[2];
-Ptr<RenderUniform> RenderMaterial::MATERAIL_UNIFORM;
 
 Ptr<RenderShader> RenderMaterial::SPHERE_HELPER_SHADER;
 
@@ -70,6 +73,7 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 		OPAQUE_SHADER->SetBlendingEnabled(0, false);
 		OPAQUE_SHADER->SetBlendingEnabled(1, false);
 		OPAQUE_SHADER->SetBlendingEnabled(2, false);
+		OPAQUE_SHADER->SetBlendingEnabled(3, false);
 		OPAQUE_SHADER->SetViewport(0, 0, swExtent.width, swExtent.height);
 		OPAQUE_SHADER->SetViewportDynamic(true);
 		OPAQUE_SHADER->SetDepth(true, true);
@@ -77,16 +81,11 @@ void RenderMaterial::SetupMaterialShaders(Renderer* renderer, RenderUniform* tra
 		OPAQUE_SHADER->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
 			ERenderShaderStage::AllStages);
 
-		OPAQUE_SHADER->AddInput(3, ERenderShaderInputType::Uniform, ERenderShaderStage::Fragment);
+		OPAQUE_SHADER->AddInput(3, ERenderShaderInputType::DynamicUniform, ERenderShaderStage::Fragment);
 		OPAQUE_SHADER->AddInput(4, ERenderShaderInputType::ImageSampler, ERenderShaderStage::Fragment);
 		OPAQUE_SHADER->AddInput(5, ERenderShaderInputType::ImageSampler, ERenderShaderStage::Fragment);
 
 		OPAQUE_SHADER->Create();
-
-
-		MATERAIL_UNIFORM = Ptr<RenderUniform>(new RenderUniform());
-		MATERAIL_UNIFORM->SetTransferDst(true);
-		MATERAIL_UNIFORM->Create(renderer, sizeof(MaterialData), false);
 	}
 
 
@@ -252,6 +251,7 @@ RenderShader* RenderMaterial::GetLProbeShader(ERenderMaterialType type)
 
 RenderMaterial::RenderMaterial(ERenderMaterialType type)
 	: mType(type)
+	, mDynamicOffset(0)
 {
 
 }
@@ -269,8 +269,8 @@ void RenderMaterial::Setup(MaterialData* data, RenderImage* colorImage, RenderIm
 	Renderer* renderer = Application::Get().GetRenderer();
 
 	mMatData = data;
-	mTextures[0] = colorImage;
-	mTextures[1] = roughnessMetallicImage;
+	mTextures[0] = colorImage ? colorImage : renderer->GetDefaultImage(0)->GetRenderImage();
+	mTextures[1] = roughnessMetallicImage ? roughnessMetallicImage : renderer->GetDefaultImage(1)->GetRenderImage();
 
 	switch (mType)
 	{
@@ -283,8 +283,9 @@ void RenderMaterial::Setup(MaterialData* data, RenderImage* colorImage, RenderIm
 		mDescriptorSet->AddDescriptor(RenderShader::COMMON_BLOCK_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_ALL, renderer->GetPipeline()->GetUniforms().common->GetBuffers());
 
-		mDescriptorSet->AddDescriptor(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_FRAGMENT_BIT, MATERAIL_UNIFORM->GetBuffers());
+		mDescriptorSet->AddDescriptor(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+			VK_SHADER_STAGE_FRAGMENT_BIT, renderer->GetMaterialUniform()->GetBuffers(),
+			0, ALIGN_SIZE(sizeof(MaterialData), 64));
 
 		mDescriptorSet->AddDescriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT, mTextures[0]->GetView(), mTextures[0]->GetSampler());
@@ -310,7 +311,9 @@ void RenderMaterial::Bind(VKICommandBuffer* cmdBuffer, uint32_t frame)
 		break;
 	}
 
+	std::array<uint32_t, 1> dynamicOffsets = { (uint32_t)mDynamicOffset * ALIGN_SIZE(sizeof(MaterialData), 64) };
+
 	VkDescriptorSet descSet = mDescriptorSet->Get(frame);
 	vkCmdBindDescriptorSets(cmdBuffer->GetCurrent(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-		layout, 0, 1, &descSet, 0, nullptr);
+		layout, 0, 1, &descSet, (uint32_t)dynamicOffsets.size(), dynamicOffsets.data());
 }

@@ -159,8 +159,12 @@ public:
 	// Return the current scene ViewDir.
 	inline const glm::vec3& GetViewDir() const { return mViewDir; }
 
-	// Return the transform uniform.
+	// Return uniform.
 	inline RenderUniform* GetTransformUniform() { return mTransformUniform.get(); }
+	inline RenderUniform* GetMatUniform() { return mMaterialUniform.get(); }
+
+	// Update Dynamic Uniforms.
+	void UpdateUniforms(uint32_t frame);
 
 	// Return the sun shadow.
 	inline RenderDirShadow* GetSunShadow() { return mSunShadow.get(); }
@@ -233,6 +237,9 @@ private:
 	// Transfrom Uniform.
 	UniquePtr<RenderUniform> mTransformUniform;
 
+	// Material Uniform.
+	UniquePtr<RenderUniform> mMaterialUniform;
+
 	// The Sun Shadow.
 	UniquePtr<RenderDirShadow> mSunShadow;
 
@@ -249,7 +256,11 @@ private:
 	// Descriptor Set for sun lighting pass.
 	UniquePtr<VKIDescriptorSet> mSunLightingSet;
 
-	//
+	// Render Sphere.
 	UniquePtr<RenderSphere> mRSphere;
+
+	// Dynamic Materail Data.
+	std::vector<uint8_t> mDynamicMatData;
+	uint32_t mDynamicMatDataCount;
 
 };

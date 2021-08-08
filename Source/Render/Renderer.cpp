@@ -24,6 +24,7 @@
 #include "Renderer.h"
 #include "Application.h"
 #include "Core/GISystem.h"
+#include "Core/Image2D.h"
 
 #include "RendererPipeline.h"
 #include "RenderData/RenderScene.h"
@@ -32,6 +33,7 @@
 #include "RenderData/Shaders/RenderShaderBlocks.h"
 #include "RenderData/Shaders/RenderMaterial.h"
 #include "RenderData/Primitives/RenderSphere.h"
+#include "RenderData/UI/RenderImGUI.h"
 
 
 #include "VKInterface/VKIInstance.h"
@@ -110,9 +112,28 @@ void Renderer::Initialize()
 	mRScene = UniquePtr<RenderScene>(new RenderScene());
 	mRScene->Initialize();
 
+	// Render Scene.
+	mRenderUI = UniquePtr<RenderImGUI>(new RenderImGUI());
+	mRenderUI->Initialize(this, appWnd);
 
-	// Material Shaders.
+
+
+	// Material...
 	RenderMaterial::SetupMaterialShaders(this, mRScene->GetTransformUniform());
+	LoadDefaultImages();
+
+}
+
+
+void Renderer::LoadDefaultImages()
+{
+	mDefaultImages[0] = Ptr<Image2D>(new Image2D());
+	mDefaultImages[0]->LoadImage(RESOURCES_DIRECTORY "Textures/Default_White.png");
+	mDefaultImages[0]->UpdateRenderImage();
+
+	mDefaultImages[1] = Ptr<Image2D>(new Image2D());
+	mDefaultImages[1]->LoadImage(RESOURCES_DIRECTORY "Textures/Default_BRDF.png");
+	mDefaultImages[1]->UpdateRenderImage();
 }
 
 
@@ -120,9 +141,14 @@ void Renderer::Destroy()
 {
 	//
 	mRSphere.reset();
+	mDefaultImages[0].reset();
+	mDefaultImages[1].reset();
 
 	// Destroy Material Shaders.
 	RenderMaterial::DestroyMaterialShaders();
+
+	//
+	mRenderUI->Destroy();
 
 	// Destroy the scene Render Data.
 	mRScene->Destroy();
@@ -213,6 +239,7 @@ void Renderer::EndRender()
 	// To avoid the next frame from using previous frame data. we wait when update happen.
 	if (mPipeline->IsWaitForUpdate())
 	{
+		LOGW("-> WAIT FOR UPATE.");
 		WaitForIdle();
 	}
 
@@ -233,7 +260,6 @@ void Renderer::Render()
 	// Next Concurrent Frame...
 	NextFrame();
 
-
 	// Current Frame Sync Data
 	VKIFence* fnFrame = mVKData.frameSync[mCurrentFrame].fnFrame.get();
 	VKISemaphore* smImage = mVKData.frameSync[mCurrentFrame].smImage.get();
@@ -252,6 +278,10 @@ void Renderer::Render()
 		return;
 
 
+	// Update Dynamic Uniforms...
+	mRScene->UpdateUniforms(mCurrentFrame);
+
+
 	// Begin Pipeline.
 	glm::vec4 viewport(0.0f, 0.0f, mVKData.swapchain->GetExtent().width, mVKData.swapchain->GetExtent().height);
 	mPipeline->BeginRender(mCurrentFrame, mRScene.get(), viewport);
@@ -262,11 +292,12 @@ void Renderer::Render()
 	cmdBuffer->SetCurrent(mCurrentFrame);
 
 	RecordFrameCommands(imgIndex);
-	// TODO: UI DARW COMMANDS...
+	mRenderUI->RenderFrame(imgIndex, mCurrentFrame);
 
 
-	std::array<VkCommandBuffer, 1> cmdBuffers = {
-		mVKData.device->GetDrawCmd()->Get(mCurrentFrame)
+	std::array<VkCommandBuffer, 2> cmdBuffers = {
+		mVKData.device->GetDrawCmd()->Get(mCurrentFrame),
+		mRenderUI->GetCmdBuffer()->GetCurrent()
 	};
 
 
@@ -332,9 +363,7 @@ void Renderer::RecordFrameCommands(uint32_t imgIndex)
 
 void Renderer::WaitForIdle()
 {
-	LOGE("-> WAIT");
 	vkDeviceWaitIdle(mVKData.device->Get());
-
 }
 
 
@@ -346,4 +375,10 @@ void Renderer::RecreateSwapchain()
 
 	VkExtent2D swExtent = mVKData.swapchain->GetExtent();
 	mPipeline->Resize(glm::ivec2(swExtent.width, swExtent.height));
+}
+
+
+RenderUniform* Renderer::GetMaterialUniform()
+{
+	return mRScene->GetMatUniform();
 }

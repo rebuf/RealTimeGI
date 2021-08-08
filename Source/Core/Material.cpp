@@ -35,6 +35,7 @@ Material::Material()
 {
 	mData.color = glm::vec4(1.0f);
 	mData.brdf = glm::vec4(1.0f);
+	mData.emission = glm::vec4(0.0f);
 }
 
 
@@ -54,6 +55,18 @@ void Material::SetColor(const glm::vec4& value)
 const glm::vec4& Material::GetColor()
 {
 	return mData.color;
+}
+
+
+void Material::SetEmission(const glm::vec4& value)
+{
+	mData.emission = value;
+}
+
+
+const glm::vec4& Material::GetEmission()
+{
+	return mData.emission;
 }
 
 
@@ -87,11 +100,24 @@ void Material::UpdateRenderMaterial()
 {
 	mRenderMaterial = UniquePtr<RenderMaterial>(new RenderMaterial(ERenderMaterialType::Opaque));
 
-	if (!mColorTexture->GetRenderImage())
-		mColorTexture->UpdateRenderImage();
+	RenderImage* rColorTex = nullptr, *rMetRoughTex = nullptr;
 
-	if (!mRoughnessMetallic->GetRenderImage())
-		mRoughnessMetallic->UpdateRenderImage();
+	if (mColorTexture)
+	{
+		if (!mColorTexture->GetRenderImage())
+			mColorTexture->UpdateRenderImage();
 
-	mRenderMaterial->Setup(&mData, mColorTexture->GetRenderImage(), mRoughnessMetallic->GetRenderImage());
+		rColorTex = mColorTexture->GetRenderImage();
+	}
+
+	if (mRoughnessMetallic)
+	{
+		if (!mRoughnessMetallic->GetRenderImage())
+			mRoughnessMetallic->UpdateRenderImage();
+
+		rMetRoughTex = mRoughnessMetallic->GetRenderImage();
+	}
+
+
+	mRenderMaterial->Setup(&mData, rColorTex, rMetRoughTex);
 }

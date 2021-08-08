@@ -89,6 +89,12 @@ public:
 	// Return the application time.
 	inline float GetDeltaTime() { return mDeltaTime; }
 
+	// Return The Application User Handler.
+	inline AppUser* GetUser() { return mAppUser.get(); }
+
+	// Replace current Main application scene.
+	void ReplaceSceen(Ptr<Scene> scene);
+
 private:
 	// Initialize the window.
 	void SetupWindow();
@@ -113,7 +119,7 @@ private:
 	float mDeltaTime;
 
 	// The application main scene.
-	UniquePtr<Scene> mMainScene;
+	Ptr<Scene> mMainScene;
 
 	// The application's name.
 	std::string mAppName;
@@ -121,7 +127,7 @@ private:
 	// The application's renderer.
 	UniquePtr<Renderer> mRenderer;
 
-	//
+	// The User Handler.
 	UniquePtr<AppUser> mAppUser;
 };
 

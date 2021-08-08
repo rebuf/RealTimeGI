@@ -165,3 +165,26 @@ glm::mat4 Transform::GetCubeViewProj(uint32_t face, const glm::vec3& pos)
 
 	return proj * view;
 }
+
+
+void Transform::DirectionToPolar(const glm::vec3& dir, float& pitch, float& yaw)
+{
+	pitch = glm::asin(dir.z);
+	yaw = glm::atan(dir.y, dir.x);
+	yaw = (yaw < 0.0f) ? (2.0f * PI) + yaw : yaw;
+}
+
+
+glm::vec3 Transform::PolarToDirection(float pitch, float yaw)
+{
+	const float cp = glm::cos(pitch);
+	const float sp = glm::sin(pitch);
+	const float cy = glm::cos(yaw);
+	const float sy = glm::sin(yaw);
+	
+	glm::vec3 dir;
+	dir.x = cy * cp;
+	dir.y = sy * cp;
+	dir.z = sp;
+	return dir;
+}

@@ -92,6 +92,9 @@ public:
 	// Find the memory type index that match filter and properties.
 	uint32_t FindMemory(uint32_t filter, VkMemoryPropertyFlags properties);
 
+	// Return vulkan command pool created by this device.
+	inline VkCommandPool GetCmdPool() { return mCmdPool; }
+
 public:
 	// Begin Transient Command Buffer.
 	VkCommandBuffer BeginTransientCmd();

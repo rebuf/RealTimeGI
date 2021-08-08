@@ -60,7 +60,7 @@ void IrradianceVolumeNode::UpdateIrradianceVolumeNode()
 {
 	CHECK(!mRenderIrradianceVolume);
 	mRenderIrradianceVolume = UniquePtr<RenderIrradianceVolume>(new RenderIrradianceVolume());
-	mRenderIrradianceVolume->SetDirty(LIGHT_PROBES_BOUNCES);
+	mRenderIrradianceVolume->SetDirty(INVALID_INDEX);
 	mRenderIrradianceVolume->SetVolume(mStart, mExtent, mCount);
 	mRenderIrradianceVolume->Create();
 
@@ -89,4 +89,10 @@ Box IrradianceVolumeNode::GetBounds() const
 	bounds.Add(mStart);
 	bounds.Add(mStart + mExtent);
 	return bounds;
+}
+
+
+void IrradianceVolumeNode::SetDirty()
+{
+	mRenderIrradianceVolume->SetDirty(LIGHT_PROBES_BOUNCES);
 }

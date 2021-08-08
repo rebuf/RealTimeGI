@@ -92,10 +92,7 @@ private:
 
 
 public:
-	// Update Material Uniform Buffer.
-	static Ptr<RenderUniform> MATERAIL_UNIFORM;
-
-	//
+	// Shader for drawing helper sphere.
 	static Ptr<RenderShader> SPHERE_HELPER_SHADER;
 
 private:
@@ -105,13 +102,16 @@ private:
 	// Material Descriptor Set.
 	Ptr<VKIDescriptorSet> mDescriptorSet;
 
-	// Materail Data, used to update the materail unifrom.
-	MaterialData* mMatData;
-
 	// Materail Textures.
 	//  [0] Color Image
 	//  [1] Roughness & Metallic.
 	RenderImage* mTextures[2];
 
+public:
+	// Materail Data, used to update the materail unifrom.
+	MaterialData* mMatData;
+
+	// Dynamic Offset of this material in the uniform buffer.
+	int32_t mDynamicOffset;
 };
 

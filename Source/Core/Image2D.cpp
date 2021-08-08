@@ -114,15 +114,7 @@ bool Image2D::LoadImage(const std::string& imgFile)
 		return false;
 	}
 
-
-	// Set format based on the number of channels
-	switch (imgNumChannels)
-	{
-	case 1: mFormat = EImageFormat::R; break;
-	case 2: mFormat = EImageFormat::RGB; break;
-	case 3: mFormat = EImageFormat::RGBA; break;
-	}
-
+	mFormat = EImageFormat::RGBA;
 
 	// Allocate & Copy
 	Allocate(mFormat, glm::ivec2(imgWidth, imgHeight));

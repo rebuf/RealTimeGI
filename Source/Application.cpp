@@ -82,10 +82,12 @@ void Application::Initialize()
 	mRenderer = UniquePtr<Renderer>( new Renderer() );
 	mRenderer->Initialize();
 
-	// ...
+	// User.
 	mAppUser = UniquePtr<AppUser>(new AppUser());
+	mAppUser->Initialize();
 
-	mMainScene = UniquePtr<Scene>( new Scene() );
+	// ...
+	mMainScene = Ptr<Scene>( new Scene() );
 	mMainScene->GetCamera().SetAspect(mAppWnd->GetFrameBufferAspect());
 
 	GLTFImporter::Import(mMainScene.get(), RESOURCES_DIRECTORY "Models/Sponza/Sponza.gltf");
@@ -213,7 +215,6 @@ void Application::Initialize()
 	// ..............................................................
 #if 0
 
-	// Irrdiance Volume.
 	Box sceneBounds = mMainScene->ComputeBounds();
 	glm::vec3 vSize = sceneBounds.Extent() * 1.4f;
 	glm::vec3 vStart = sceneBounds.Center() - vSize * 0.5f;
@@ -246,15 +247,10 @@ void Application::Initialize()
 
 
 #if 1
-	//Box sceneBounds = mMainScene->ComputeBounds();
-	//glm::vec3 vSize = sceneBounds.Extent() * 1.4f;
-	//glm::vec3 vStart = sceneBounds.Center() - vSize * 0.5f;
-	//glm::ivec3 vCount(15, 8, 5);
-
 	Box sceneBounds = mMainScene->ComputeBounds();
-	glm::vec3 vSize = glm::vec3(1400.0, 250.0, 240.0f);
-	glm::vec3 vStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 330.0f);
-	glm::ivec3 vCount(20, 4, 2);
+	glm::vec3 vSize = glm::vec3(1400.0, 250.0, 220.0f);
+	glm::vec3 vStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
+	glm::ivec3 vCount(18, 3, 3);
 
 
 
@@ -345,6 +341,18 @@ void Application::Initialize()
 }
 
 
+void Application::ReplaceSceen(Ptr<Scene> scene)
+{
+	if (mMainScene)
+	{
+		mMainScene->Destroy();
+	}
+
+	mMainScene = scene;
+	mMainScene->Start();
+}
+
+
 void Application::SetupWindow()
 {
 	mAppWnd = UniquePtr<AppWindow>(
@@ -388,9 +396,10 @@ int32_t Application::Run()
 
 void Application::Destroy()
 {
+	mAppUser->Destroy();
+
 	// Wait for the renderer to be idle.
 	mRenderer->WaitForIdle();
-
 
 	// Destroy the main scene.
 	if (mMainScene)

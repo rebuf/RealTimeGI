@@ -64,6 +64,9 @@ layout(binding=3) uniform MaterailBlock
 	// The Base Color.
 	vec4 Color;
 
+	// The Emission Color.
+	vec4 Emission;
+
 	// x[Roughness], y[Metallic].
 	vec4 BRDF;
 
@@ -83,6 +86,7 @@ layout(binding=5) uniform sampler2D MetallicRoughnessTexture; // Metallic (B), R
 layout(location = 0) out vec4 FragAlbedo;
 layout(location = 1) out vec4 FragBRDF;
 layout(location = 2) out vec4 FragNormal;
+layout(location = 3) out vec4 FragEmission;
 #endif
 
 
@@ -96,9 +100,10 @@ void main()
 	float LDist = length(inShadow.LightPos.xyz - inFrag.Position);
 	gl_FragDepth = LDist;
 #else
-	FragAlbedo = texture(ColorTexture, inFrag.TexCoord);
-	FragBRDF.rg = texture(MetallicRoughnessTexture, inFrag.TexCoord).gb;
+	FragAlbedo = texture(ColorTexture, inFrag.TexCoord) * inMaterial.Color;
+	FragBRDF.rg = texture(MetallicRoughnessTexture, inFrag.TexCoord).gb * inMaterial.BRDF.xy;
 	FragNormal = vec4(inFrag.Normal, 1.0);
+	FragEmission = vec4(inMaterial.Emission);
 #endif
 }
 

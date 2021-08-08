@@ -71,6 +71,9 @@ public:
 	inline void SetSelected(bool val) { mIsSelected = val; }
 	inline bool IsSelected() { return mIsSelected; }
 
+	// Set light probe dirty to get updated.
+	void SetDirty();
+
 protected:
 	// Called when the node transform changes.
 	virtual void OnTransform() override;

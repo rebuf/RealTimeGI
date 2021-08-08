@@ -30,6 +30,8 @@
 #include "Core/Core.h"
 #include "Core/Transform.h"
 
+#include <string>
+
 
 
 class Scene;
@@ -52,11 +54,20 @@ public:
 	// Construct.
 	~AppUser();
 
+	// Initialize User.
+	void Initialize();
+
+	// Destroy User.
+	void Destroy();
+
 	// Update User Interaction.
 	void Update(float deltaTime, Scene* scene);
 
 	// Match the user view to the scene view.
 	void MatchCamera(Scene* scene);
+
+	// Called every frame to Update ImGui ui.
+	void UpdateImGui();
 
 private:
 	// Update Input States.
@@ -68,10 +79,17 @@ private:
 	// Perfrm Scene Select.
 	void SceneSelect(Scene* scene);
 
+	// Load a new scene from path.
+	void LoadNewScene(const std::string& path);
+
+	// Mark all light components in the scene dirty to get updated.
+	void UpdateProbes();
+
 private:
 	// Look At.
 	glm::vec3 eye;
 	glm::vec3 target;
 	glm::vec3 up;
+
 };
 

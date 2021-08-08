@@ -26,13 +26,18 @@
 #include "AppUser.h"
 #include "Application.h"
 #include "AppWindow.h"
+#include "Core/GISystem.h"
 #include "Scene/Scene.h"
 #include "Scene/Node.h"
 #include "Scene/LightProbeNode.h"
+#include "Scene/IrradianceVolumeNode.h"
 
-
-
+#include "Core/UI/imGUI/imgui.h"
 #include "GLFW/glfw3.h"
+#include "Importers/GLTFImporter.h"
+
+#include "glm/gtc/type_ptr.hpp"
+
 
 
 
@@ -99,6 +104,22 @@ AppUser::~AppUser()
 }
 
 
+void AppUser::Initialize()
+{
+	// Bind File Drop to load scene..
+	Application::Get().GetMainWindow()->FileDropEvent.BindMemberRaw(this, &AppUser::LoadNewScene);
+
+}
+
+
+void AppUser::Destroy()
+{
+	// Clear Binding.
+	Application::Get().GetMainWindow()->FileDropEvent.Reset();
+
+}
+
+
 void AppUser::MatchCamera(Scene* scene)
 {
 	Camera& camera = Application::Get().GetMainScene()->GetCamera();
@@ -108,6 +129,43 @@ void AppUser::MatchCamera(Scene* scene)
 	target = camera.GetViewTarget();
 	eye = camera.GetViewPos();
 	up = camera.GetUp();
+}
+
+
+void AppUser::LoadNewScene(const std::string& path)
+{
+	LOGI("Loading scene... (%s)", path.c_str());
+
+	if (path.empty())
+		return;
+
+
+	std::string ext = GISystem::GetFileExtension(path);
+	bool isSuccess = false;
+	Ptr<Scene> scene;
+
+
+	// Load based on extension...
+	if (GLTFImporter::IsSupported(path))
+	{
+		scene = Ptr<Scene>(new Scene());
+		isSuccess = GLTFImporter::Import(scene.get(), path);
+	}
+
+
+	// Failed to load?
+	if (!isSuccess)
+		return;
+
+	scene->GetCamera().SetAspect(Application::Get().GetMainWindow()->GetFrameBufferAspect());
+	scene->GetGlobal().SetSunColor(glm::vec3(1.0f, 0.9f, 0.85f));
+	scene->GetGlobal().SetSunPower(4.0f);
+	scene->GetGlobal().SetSunDir(glm::normalize(glm::vec3(-1.0f, -1.0f, -3.0f)));
+
+	scene->ResetView(); // Reset view.
+	MatchCamera(scene.get());
+
+	Application::Get().ReplaceSceen(scene);
 }
 
 
@@ -135,6 +193,7 @@ void AppUser::Update(float deltaTime, Scene* scene)
 		scene->GetGlobal().isLightProbeVisualize = !scene->GetGlobal().isLightProbeVisualize;
 
 	// TEMP------------------------------------------
+
 
 }
 	
@@ -262,4 +321,92 @@ void AppUser::SceneSelect(Scene* scene)
 
 
 
+}
+
+
+void AppUser::UpdateImGui()
+{
+	Scene* scene = Application::Get().GetMainScene();
+
+
+	ImGui::Begin("Vulkan Render");
+	ImGui::Text("%.3f ms/Frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::Separator();
+
+
+	// -----
+	// SUN
+	{
+		bool isUpdate = false;
+		float yaw = 0.0f, pitch = 0.0f;
+		Transform::DirectionToPolar(scene->GetGlobal().GetSunDir(), pitch, yaw);
+		yaw = glm::degrees(yaw);
+		pitch = glm::degrees(-pitch);
+
+		glm::vec3 color = scene->GetGlobal().GetSunColor();
+		float power = scene->GetGlobal().GetSunPower();
+
+		
+
+		ImGui::Text("SUN");
+		isUpdate = ImGui::SliderFloat("YAW", &yaw, 0.0f, 359.0f, "%.3f") || isUpdate;
+		isUpdate = ImGui::SliderFloat("PITCH", &pitch, 0.0f, 97.0f)  || isUpdate;
+		isUpdate = ImGui::ColorEdit3("COLOR", glm::value_ptr(color)) || isUpdate;
+		isUpdate = ImGui::SliderFloat("POWER", &power, 0.0f, 20.0f)  || isUpdate;
+
+
+
+		if (isUpdate)
+		{
+			yaw = glm::radians(yaw);
+			pitch = glm::radians(-pitch);
+
+			scene->GetGlobal().SetSunColor(color);
+			scene->GetGlobal().SetSunPower(power);
+			scene->GetGlobal().SetSunDir(Transform::PolarToDirection(pitch, yaw));
+			scene->GetGlobal().SetDirtyFlag(ESceneGlobalDirtyFlag::DirtySun);
+		}
+	}
+
+	// -----
+
+	ImGui::Separator();
+
+	{
+		//
+		if (ImGui::Button("Update."))
+		{
+			UpdateProbes();
+		}
+
+		// 
+		if (ImGui::Button("Save Light Data."))
+		{
+
+		}
+	}
+
+	ImGui::End();
+}
+
+
+void AppUser::UpdateProbes()
+{
+	Scene* scene = Application::Get().GetMainScene();
+
+
+	// Lights & Light Probes...
+	for (auto& node : scene->GetLights())
+	{
+		if (node->GetType() == ENodeType::LightProbe)
+		{
+			LightProbeNode* probe = static_cast<LightProbeNode*>(node);
+			probe->SetDirty();
+		}
+		else if (node->GetType() == ENodeType::IrradianceVolume)
+		{
+			IrradianceVolumeNode* volume = static_cast<IrradianceVolumeNode*>(node);
+			volume->SetDirty();
+		}
+	}
 }

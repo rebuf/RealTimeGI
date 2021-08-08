@@ -67,6 +67,9 @@ public:
 	// Bounds.
 	virtual Box GetBounds() const override;
 
+	// Set light probe dirty to get updated.
+	void SetDirty();
+
 protected:
 	// Called when the node transform changes.
 	virtual void OnTransform() override;

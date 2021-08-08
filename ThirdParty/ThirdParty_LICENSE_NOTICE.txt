@@ -1,0 +1,80 @@
+#######################################################################################################################################
+#   This file contain the licence notice of the third party libraries used in this project. 
+##
+###
+#####
+
+
+
+
+
+#############################################
+# GLFW:
+GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop. It provides a simple API for creating windows, contexts and surfaces, receiving input and events.
+
+License:
+GLFW is licensed under the zlib/libpng license, a BSD-like license that allows static linking with closed source software.
+Copyright © 2002-2006 Marcus Geelnard
+Copyright © 2006-2019 Camilla Löwy
+
+
+
+#############################################
+# GLFW:
+OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
+
+License:
+GLFW is licensed under The MIT License
+Copyright (c) 2005 - G-Truc Creation
+
+
+
+#############################################
+# stb:
+stb is a header only image loading library.
+
+License:
+stb_image - v2.26 - public domain image loader
+
+
+#############################################
+# cereal:
+cereal is a header-only C++11 serialization library. cereal takes arbitrary data types and reversibly turns them into different representations, such as compact binary encodings, XML, or JSON. cereal was designed to be fast, light-weight, and easy to extend - it has no external dependencies and can be easily bundled with other code or used standalone.
+
+License:
+cereal is licensed under the BSD license.
+Copyright (c) 2014, Randolph Voorhies, Shane Grant
+
+
+
+#############################################
+# tinygltfloader:
+TinyGLTFLoader is a header only C++11 glTF 2.0 https://github.com/KhronosGroup/glTF library.
+
+License:
+TinyGLTF is licensed under MIT license.
+Copyright (c) 2017 Syoyo Fujita, Aurélien Chatelain and many contributors
+
+TinyGLTF uses the following third party libraries:
+    json.hpp : Copyright (c) 2013-2017 Niels Lohmann. MIT license.
+    base64 : Copyright (C) 2004-2008 René Nyffenegger
+    stb_image.h : v2.08 - public domain image loader - Github link
+    stb_image_write.h : v1.09 - public domain image writer - Github link
+
+
+
+
+#############################################
+# tinyobjloader:
+Tiny but powerful single file wavefront obj loader written in C++03. No dependency except for C++ STL. It can parse over 10M polygons with moderate memory and time.
+
+TinyObjLoader is licensed under MIT license.
+
+
+TinyObjLoader Third party licenses.
+    pybind11 : BSD-style license.
+    mapbox earcut.hpp: ISC License.
+
+
+
+

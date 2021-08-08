@@ -94,6 +94,9 @@ extern void LOG_MSG(ELogType logType, const char* msg, ...);
 #define INVALID_UINDEX 0xFFFFFFFFU
 
 
+// Number of bounces to compute for global illumination.
+extern uint32_t g_NumOfBounces;
+
 
 // Align memory size to a Base alignment.
 #define ALIGN_SIZE(SIZE, BASE) ((SIZE + BASE - 1) & ~(BASE - 1))

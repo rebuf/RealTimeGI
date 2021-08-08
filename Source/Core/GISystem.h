@@ -37,7 +37,7 @@ class GISystem
 {
 public:
 	// Return file extension from file path.
-	static std::string GetFileExtension(const std::string& file, bool withDot = false);
+	static std::string GetFileExtension(const std::string& file);
 
 	// Return the path normalized.
 	static std::string NormalizePath(const std::string& path);

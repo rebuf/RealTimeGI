@@ -52,6 +52,12 @@
 
 
 
+#define MAX_NUM_MATERIAL_UNIFORMS 512
+
+
+
+
+
 
 
 
@@ -77,6 +83,7 @@ RenderScene::RenderScene()
 	: mScene(nullptr)
 	, mHasDirtyLightProbe(false)
 	, mHasDirtyIrradianceVolume(false)
+	, mDynamicMatDataCount(0)
 {
 
 }
@@ -94,6 +101,11 @@ void RenderScene::Initialize()
 
 	mTransformUniform = UniquePtr<RenderUniform>(new RenderUniform());
 	mTransformUniform->Create(renderer, sizeof(GUniform::CommonBlock), true);
+
+	uint32_t matUniformSize = ALIGN_SIZE(sizeof(MaterialData), 64) * MAX_NUM_MATERIAL_UNIFORMS;
+	mMaterialUniform = UniquePtr<RenderUniform>(new RenderUniform());
+	mMaterialUniform->Create(renderer, matUniformSize, true);
+	mDynamicMatData.resize(matUniformSize);
 
 	mRSphere = UniquePtr<RenderSphere>(new RenderSphere());
 	mRSphere->UpdateData(8);
@@ -159,6 +171,7 @@ void RenderScene::Reset()
 	mEnvironment.Reset();
 	mLightProbes.clear();
 	mIrradianceVolumes.clear();
+	mDynamicMatDataCount = 0;
 
 
 	for (size_t i = 0; i < mPrimitives.size(); ++i)
@@ -216,6 +229,11 @@ void RenderScene::AddLightProbe(Node* node)
 
 	LightProbeNode* probe = static_cast<LightProbeNode*>(node);
 	RenderLightProbe* rprobe = probe->GetRenderLightProbe();
+
+	// Invalid LightProbe.
+	if (rprobe->GetDirty() == INVALID_INDEX)
+		return;
+
 	mLightProbes.emplace_back(rprobe);
 	mHasDirtyLightProbe = mHasDirtyLightProbe || rprobe->GetDirty() != 0;
 
@@ -245,8 +263,15 @@ void RenderScene::AddIrradianceVolume(Node* node)
 	if (!mEnvironment.isLightProbeEnabled)
 		return;
 
+
 	IrradianceVolumeNode* irrVolume = static_cast<IrradianceVolumeNode*>(node);
 	RenderIrradianceVolume* rVolume = irrVolume->GetRenderIrradianceVolume();
+
+	// Invalid Irradiance Volume.
+	if (rVolume->GetDirty() == INVALID_INDEX)
+		return;
+
+
 	mIrradianceVolumes.emplace_back(rVolume);
 	mHasDirtyIrradianceVolume = mHasDirtyIrradianceVolume || rVolume->GetDirty() != 0;
 
@@ -274,7 +299,7 @@ void RenderScene::CollectSceneLights(Scene* scene)
 	mEnvironment.sunColorAndPower = glm::vec4(scene->GetGlobal().GetSunColor(),
 		scene->GetGlobal().GetSunPower());
 
-	glm::mat4 sunView = Transform::LookAt(-sunDir, glm::vec3(0.0f), Transform::UP);
+	glm::mat4 sunView = Transform::LookAt(-sunDir, glm::vec3(0.0f), abs(sunDir.z) < 0.9 ? Transform::UP : Transform::FORWARD * glm::sign(sunDir.z));
 	glm::mat4 sunProj = Transform::Ortho(1200.0f, -1200.0f, 1200.0f, -1200.0f, -10000.0f, 2000.0f);
 	mSunShadow->SetShadowMatrix(sunProj * sunView);
 
@@ -331,6 +356,10 @@ void RenderScene::TraverseScene(Scene* scene)
 
 				//
 				newPrim->materail = meshNode->GetMaterial(i)->GetRenderMaterial();
+				newPrim->materail->mDynamicOffset = (int32_t)mDynamicMatDataCount;
+				*((MaterialData*)(mDynamicMatData.data() + ALIGN_SIZE(sizeof(MaterialData), 64) * mDynamicMatDataCount)) = *newPrim->materail->mMatData;
+
+				++mDynamicMatDataCount;
 			}
 		}
 			break;
@@ -339,12 +368,16 @@ void RenderScene::TraverseScene(Scene* scene)
 
 	} // End of Renderable loop.
 
+}
 
 
-	// Collect Lights...
-	for (const auto& light : scene->GetLights())
+void RenderScene::UpdateUniforms(uint32_t frame)
+{
+	if (!mDynamicMatData.empty())
 	{
-		// TODO Lights....
+		mMaterialUniform->Update(frame, 0,
+			mDynamicMatDataCount * ALIGN_SIZE(sizeof(MaterialData), 64),
+			mDynamicMatData.data());
 	}
 
 }

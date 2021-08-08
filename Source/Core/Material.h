@@ -45,6 +45,9 @@ struct MaterialData
 	// The Base Color.
 	glm::vec4 color;
 
+	// The Emission Color.
+	glm::vec4 emission;
+
 	// x[Roughness], y[Metallic].
 	glm::vec4 brdf;
 
@@ -69,6 +72,10 @@ public:
 	// Set/Get Material Base Color.
 	void SetColor(const glm::vec4& value);
 	const glm::vec4& GetColor();
+
+	// Set/Get Emission Color.
+	void SetEmission(const glm::vec4& value);
+	const glm::vec4& GetEmission();
 
 	// Set/Get Material Color Texture.
 	void SetColorTexture(Ptr<Image2D> img);

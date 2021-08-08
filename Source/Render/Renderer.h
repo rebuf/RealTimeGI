@@ -39,6 +39,8 @@ class RenderShader;
 class RenderUniform;
 class RenderScene;
 class RenderSphere;
+class RenderImGUI;
+class Image2D;
 
 class VKIInstance;
 class VKIDevice;
@@ -136,9 +138,15 @@ public:
 	// Return the rendrer pipeline.
 	inline RendererPipeline* GetPipeline() { return mPipeline.get(); }
 
+	// Return the rendrer pipeline.
+	RenderUniform* GetMaterialUniform();
+
 	// Return the renderer sphere.
 	inline RenderSphere* GetSphere() { return mRSphere.get(); }
 	inline RenderSphere* GetSphereLow() { return mRSphere.get(); }
+
+	// Return
+	inline Image2D* GetDefaultImage(uint32_t i) { return mDefaultImages[i].get(); }
 
 	// Wait for the queues to be Idle/
 	void WaitForIdle();
@@ -155,6 +163,9 @@ private:
 
 	// Recreate the swapchain to match the current surface size.
 	void RecreateSwapchain();
+
+	// Load Default Images from file.
+	void LoadDefaultImages();
 
 public:
 	// The number of concurrent frames we are allowed to render.
@@ -178,6 +189,12 @@ private:
 
 	// The Render Sphere Mesh, used to draw sphere for various render stages.
 	UniquePtr<RenderSphere> mRSphere;
+
+	// ImGUI Render UI.
+	UniquePtr<RenderImGUI> mRenderUI;
+
+	// Default Render Images used for material.
+	Ptr<Image2D> mDefaultImages[2];
 };
 
 

@@ -93,6 +93,10 @@ public:
 	// Return the extent of the swapchain images.
 	inline VkExtent2D GetExtent() { return mExtent; }
 
+	// Return the surface format
+	inline VkSurfaceFormatKHR GetFormat() { return mSurfaceFormat; }
+
+
 private:
 	// Query swapchain perperties from the device.
 	void QuerySwapchainProperties();

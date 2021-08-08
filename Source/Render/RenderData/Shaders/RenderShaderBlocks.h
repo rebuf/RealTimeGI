@@ -39,7 +39,7 @@
 
 
 #define COMMON_MODE_NONE 0
-#define COMMON_MODE_REF_CAPTURE 1
+#define COMMON_MODE_REF_CAPTURE (1 << 0)
 
 
 

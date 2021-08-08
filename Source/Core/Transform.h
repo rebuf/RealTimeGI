@@ -90,6 +90,12 @@ public:
 	static glm::mat4 GetCubeView(uint32_t face, const glm::vec3& pos);
 	static glm::mat4 GetCubeViewProj(uint32_t face, const glm::vec3& pos);
 
+	// Compute polar angles Pitch & Yaw from direction vector.
+	static void DirectionToPolar(const glm::vec3& dir, float& pitch, float& yaw);
+
+	// Convert polar angles Pitch & Yaw from direction vector.
+	static glm::vec3 PolarToDirection(float pitch, float yaw);
+
 private:
 	// Update cached matrix.
 	void UpdateMatrix() const;

@@ -352,7 +352,7 @@ void VKIDescriptorSet::AddDescriptor(uint32_t binding, VkDescriptorType type, Vk
 void VKIDescriptorSet::AddDescriptor(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stages,
 	const std::vector<VKIBuffer*>& buffers, VkDeviceSize offset, VkDeviceSize size)
 {
-	AddDescriptor(binding, type, stages, buffers, 0, buffers[0]->GetSize(), 1);
+	AddDescriptor(binding, type, stages, buffers, offset, size, 1);
 }
 
 
