@@ -63,9 +63,6 @@ public:
 	// Update User Interaction.
 	void Update(float deltaTime, Scene* scene);
 
-	// Match the user view to the scene view.
-	void MatchCamera(Scene* scene);
-
 	// Called every frame to Update ImGui ui.
 	void UpdateImGui();
 
@@ -74,7 +71,7 @@ private:
 	void UpdateInput(float deltaTime);
 
 	// Update Navigation.
-	void UpdateNav(float deltaTime);
+	void UpdateNav(float deltaTime, Scene* scene);
 
 	// Perfrm Scene Select.
 	void SceneSelect(Scene* scene);
@@ -84,12 +81,6 @@ private:
 
 	// Mark all light components in the scene dirty to get updated.
 	void UpdateProbes();
-
-private:
-	// Look At.
-	glm::vec3 eye;
-	glm::vec3 target;
-	glm::vec3 up;
 
 };
 

@@ -82,9 +82,11 @@ void main()
 		if (inConstant.Position.w < 1.0)
 			discard;
 
-		FragColor.rgb = FragColor.rgb * 0.01;
+		FragColor.rgb = FragColor.rgb * 0.1;
 	}
 
-	FragColor.a = 1.0;
+	//FragColor.rgb *= abs(dot(-inCommon.ViewDir, normalize(inFrag.Position)));
+
+	FragColor.a = 0.5;
 }
 

@@ -94,6 +94,9 @@ public:
 	// Create Sphere Mesh.
 	static Mesh* MakeSphere(uint32_t seg, float radius);
 
+	// Create Box Mesh.
+	static Mesh* MakeBox();
+
 private:
 	// Mesh Vertices.
 	std::vector<MeshVert> mVertices;

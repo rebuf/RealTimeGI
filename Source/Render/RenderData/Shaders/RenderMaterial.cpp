@@ -158,8 +158,10 @@ void RenderMaterial::SetupSphereHelperShader(Renderer* renderer)
 	SPHERE_HELPER_SHADER->SetShader(ERenderShaderStage::Fragment, SHADERS_DIRECTORY "SphereFrag_Helper.spv");
 	SPHERE_HELPER_SHADER->SetViewport(glm::ivec4(0, 0, swExtent.width, swExtent.height));
 	SPHERE_HELPER_SHADER->SetViewportDynamic(true);
-	SPHERE_HELPER_SHADER->SetWireframe(true);
-	SPHERE_HELPER_SHADER->SetBlendingEnabled(0, false);
+	SPHERE_HELPER_SHADER->SetWireframe(false);
+	SPHERE_HELPER_SHADER->SetBlendingEnabled(0, true);
+	SPHERE_HELPER_SHADER->SetBlending(0, ERenderBlendFactor::SrcAlpha, ERenderBlendFactor::OneMinusSrcAlpha,
+		ERenderBlendOp::Add);
 
 	SPHERE_HELPER_SHADER->AddInput(RenderShader::COMMON_BLOCK_BINDING, ERenderShaderInputType::Uniform,
 		ERenderShaderStage::AllStages);

@@ -220,9 +220,10 @@ void RenderStageLightProbes::Render(VKICommandBuffer* cmdBuffer, uint32_t frame,
 
 		volumes[i]->GetLightingDescSet()->Bind(cmdBuffer, frame, mLightingVolumeShader->GetPipeline());
 
-		constants.start = glm::vec4(volumes[i]->GetVolumeStart(), 0.0f);
+		constants.start  = glm::vec4(volumes[i]->GetVolumeStart(), 0.0f);
 		constants.extent = glm::vec4(volumes[i]->GetVolumeExtent(), 0.0f);
-		constants.count = glm::vec4(volumes[i]->GetVolumeCount(), 0);
+		constants.count  = glm::vec4(volumes[i]->GetVolumeCount(), 0);
+		constants.Atten  = glm::vec4(volumes[i]->GetAtten(), 0);
 
 
 		vkCmdPushConstants(cmdBuffer->GetCurrent(), mLightingVolumeShader->GetPipeline()->GetLayout(),

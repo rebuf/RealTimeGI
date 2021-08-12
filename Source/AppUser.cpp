@@ -35,6 +35,7 @@
 #include "Core/UI/imGUI/imgui.h"
 #include "GLFW/glfw3.h"
 #include "Importers/GLTFImporter.h"
+#include "Importers/RTGIImporter.h"
 
 #include "glm/gtc/type_ptr.hpp"
 
@@ -50,6 +51,7 @@ static float g_KeyE = 0.0f;
 static float g_KeyUp = 0.0f;
 static float g_KeyDown = 0.0f;
 static float g_KeyMouseRight = 0.0f;
+static float g_KeyShift = 0.0f;
 
 static float g_KeyMouseLeft = 0.0f;
 static bool  g_KeyMouseLeft_Released = false;
@@ -70,7 +72,6 @@ static int32_t g_NavMode = 0;
 static glm::vec2 g_MousePos(0.0f);
 static glm::vec2 g_MouseOffset(0.0f);
 
-static float g_Velocity = 0.0f;
 
 
 
@@ -90,9 +91,6 @@ static float g_Velocity = 0.0f;
 
 
 AppUser::AppUser()
-	: target(0.0f, 0.0f, 0.0f)
-	, eye(1.0f)
-	, up(0.0f, 0.0f, 1.0f)
 {
 
 }
@@ -120,18 +118,6 @@ void AppUser::Destroy()
 }
 
 
-void AppUser::MatchCamera(Scene* scene)
-{
-	Camera& camera = Application::Get().GetMainScene()->GetCamera();
-
-	scene->ResetView();
-
-	target = camera.GetViewTarget();
-	eye = camera.GetViewPos();
-	up = camera.GetUp();
-}
-
-
 void AppUser::LoadNewScene(const std::string& path)
 {
 	LOGI("Loading scene... (%s)", path.c_str());
@@ -152,32 +138,41 @@ void AppUser::LoadNewScene(const std::string& path)
 		isSuccess = GLTFImporter::Import(scene.get(), path);
 	}
 
-
 	// Failed to load?
 	if (!isSuccess)
 		return;
+
+	// Delete old Scene...
+	Application::Get().ReplaceScene(nullptr);
+
+
+	// Try to load light data from .rtgi if exist.
+	{
+		std::string nfile = GISystem::NormalizePath(path);
+		std::string rtgiPath = GISystem::GetDirectory(nfile) + GISystem::GetFileName(nfile, false) + ".rtgi";
+		RTGIImporter::ImportLightComponents(scene.get(), rtgiPath);
+	}
+
 
 	scene->GetCamera().SetAspect(Application::Get().GetMainWindow()->GetFrameBufferAspect());
 	scene->GetGlobal().SetSunColor(glm::vec3(1.0f, 0.9f, 0.85f));
 	scene->GetGlobal().SetSunPower(4.0f);
 	scene->GetGlobal().SetSunDir(glm::normalize(glm::vec3(-1.0f, -1.0f, -3.0f)));
 
-	scene->ResetView(); // Reset view.
-	MatchCamera(scene.get());
+	scene->GetGlobal().isLightProbeEnabled = true;
+	scene->GetGlobal().isLightProbeHelpers = true;
+	scene->GetGlobal().isLightProbeVisualize = true;
 
-	Application::Get().ReplaceSceen(scene);
+	Application::Get().ReplaceScene(scene);
+	scene->ResetView();
 }
 
 
 void AppUser::Update(float deltaTime, Scene* scene)
 {
 	UpdateInput(deltaTime);
-	UpdateNav(deltaTime);
+	UpdateNav(deltaTime, scene);
 
-	Camera& camera = scene->GetCamera();
-	camera.SetViewTarget(target);
-	camera.SetViewPos(eye);
-	camera.RecomputeUp();
 
 	// TEMP------------------------------------------
 	if (g_KeyMouseLeft_Released)
@@ -211,6 +206,7 @@ void AppUser::UpdateInput(float deltaTime)
 	g_KeyE = glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS ? 1.0f : 0.0f;
 	g_KeyUp = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ? 1.0f : 0.0f;
 	g_KeyDown = glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ? 1.0f : 0.0f;
+	g_KeyShift = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 1.0f : 0.0f;
 
 	KEY_STATE_UPDATE(g_Key1, g_Key1_Released, GLFW_KEY_1);
 	KEY_STATE_UPDATE(g_Key2, g_Key2_Released, GLFW_KEY_2);
@@ -242,34 +238,36 @@ void AppUser::UpdateInput(float deltaTime)
 }
 
 
-void AppUser::UpdateNav(float deltaTime)
+void AppUser::UpdateNav(float deltaTime, Scene* scene)
 {
-	static const float FLY_SPEED = 5.0f;
-
+	const float FLY_SPEED = g_KeyShift > 0.0 ? 5.0f : 0.2f;
 	float flyspeed = deltaTime * FLY_SPEED * 100.0f;
-	glm::vec3 dir = glm::normalize(target - eye);
-	glm::vec3 right = glm::normalize(glm::cross(dir, up));
 
-	if (g_NavMode == 0)
-	{
-		// Rotation.
-		glm::mat4 rot =
-			  glm::rotate(glm::mat4(1.0f), g_MouseOffset.x * g_KeyMouseRight * 0.002f, up)
-			* glm::rotate(glm::mat4(1.0f), g_MouseOffset.y * g_KeyMouseRight * -0.002f, right);
+	Camera& camera = scene->GetCamera();
+	glm::vec3 eye    = camera.GetViewPos();
+	glm::vec3 target = camera.GetViewTarget();
+	glm::vec3 dir    = camera.GetViewDir();
+	glm::vec3 up     = camera.GetUp();
+	glm::vec3 right  = glm::cross(up, dir);
 
-		dir = rot * glm::vec4(dir, 0.0f);
+	// Rotation.
+	glm::mat4 rot =
+		  glm::rotate(glm::mat4(1.0f), g_MouseOffset.x * g_KeyMouseRight * 0.002f, up)
+		* glm::rotate(glm::mat4(1.0f), g_MouseOffset.y * g_KeyMouseRight * 0.002f, right);
 
-		// WASD Movement...
-		eye += dir * g_KeyW * flyspeed;
-		eye -= dir * g_KeyS * flyspeed;
-		eye += right * g_KeyA * flyspeed;
-		eye -= right * g_KeyD * flyspeed;
-		target = eye + dir;
-	}
-	else
-	{
+	dir = rot * glm::vec4(dir, 0.0f);
 
-	}
+	// WASD Movement...
+	eye += dir * g_KeyW * flyspeed;
+	eye -= dir * g_KeyS * flyspeed;
+	eye -= right * g_KeyA * flyspeed;
+	eye += right * g_KeyD * flyspeed;
+	target = eye + dir;
+
+
+	camera.SetViewTarget(target);
+	camera.SetViewPos(eye);
+	camera.RecomputeUp();
 }
 
 
@@ -379,11 +377,6 @@ void AppUser::UpdateImGui()
 			UpdateProbes();
 		}
 
-		// 
-		if (ImGui::Button("Save Light Data."))
-		{
-
-		}
 	}
 
 	ImGui::End();

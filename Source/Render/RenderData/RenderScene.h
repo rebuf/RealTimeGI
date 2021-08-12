@@ -42,6 +42,7 @@ class RenderLightProbe;
 class RenderIrradianceVolume;
 class RenderMaterial;
 class RenderSphere;
+class RenderBox;
 class VKICommandBuffer;
 class VKIImage;
 class VKIFramebuffer;
@@ -256,8 +257,9 @@ private:
 	// Descriptor Set for sun lighting pass.
 	UniquePtr<VKIDescriptorSet> mSunLightingSet;
 
-	// Render Sphere.
+	// Render Helpers.
 	UniquePtr<RenderSphere> mRSphere;
+	UniquePtr<RenderBox> mRBox;
 
 	// Dynamic Materail Data.
 	std::vector<uint8_t> mDynamicMatData;

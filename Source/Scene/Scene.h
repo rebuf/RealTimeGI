@@ -116,11 +116,16 @@ public:
 	// Compute Scene Bounding Box.
 	Box ComputeBounds();
 
+	// Return cached bounds.
+	inline const Box& GetBounds() const { return mBounds; }
+
+
 	//
 	void SetSelectedLight(Node* node);
 
 	//
 	void UnselectLight();
+
 
 private:
 	// Register node to the scene and based on its type
@@ -161,6 +166,9 @@ private:
 
 	//
 	Node* mSelectedLight;
+
+	// The Cachced scene bounding box.
+	Box mBounds;
 };
 
 

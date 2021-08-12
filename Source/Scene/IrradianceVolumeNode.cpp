@@ -62,6 +62,7 @@ void IrradianceVolumeNode::UpdateIrradianceVolumeNode()
 	mRenderIrradianceVolume = UniquePtr<RenderIrradianceVolume>(new RenderIrradianceVolume());
 	mRenderIrradianceVolume->SetDirty(INVALID_INDEX);
 	mRenderIrradianceVolume->SetVolume(mStart, mExtent, mCount);
+	mRenderIrradianceVolume->SetAtten(mAtten);
 	mRenderIrradianceVolume->Create();
 
 }

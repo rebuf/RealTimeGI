@@ -211,6 +211,15 @@ public:
 	// Return the probe layer index.
 	uint32_t GetProbeLayer(uint32_t index, uint32_t face);
 
+	// Volume Shape...
+	inline glm::vec3 GetStart() const { return mStart; }
+	inline glm::vec3 GetExtent() const { return mExtent; }
+	inline glm::ivec3 GetCount() const { return mCount; }
+
+	// Set/Get Volume Attenuation.
+	inline void SetAtten(const glm::vec3& atten) { mAtten = atten; }
+	inline glm::vec3 GetAtten() const { return mAtten; }
+
 private:
 	// Flag used to check if its dirty and need updating.
 	uint32_t mIsDirty;
@@ -241,6 +250,9 @@ private:
 
 	// Number of grid voxels on each axis.
 	glm::ivec3 mCount;
+
+	// Volume Attenuation.
+	glm::vec3 mAtten;
 
 	// Descriptor Set for lighting pass.
 	UniquePtr<VKIDescriptorSet> mLightingSet;

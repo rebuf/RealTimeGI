@@ -93,7 +93,7 @@ public:
 	inline AppUser* GetUser() { return mAppUser.get(); }
 
 	// Replace current Main application scene.
-	void ReplaceSceen(Ptr<Scene> scene);
+	void ReplaceScene(Ptr<Scene> scene);
 
 private:
 	// Initialize the window.

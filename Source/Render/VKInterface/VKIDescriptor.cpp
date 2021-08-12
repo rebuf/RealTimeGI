@@ -148,7 +148,7 @@ VKIDescriptorSet::VKIDescriptorSet()
 
 VKIDescriptorSet::~VKIDescriptorSet()
 {
-	CHECK(mPool == VK_NULL_HANDLE);
+
 }
 
 

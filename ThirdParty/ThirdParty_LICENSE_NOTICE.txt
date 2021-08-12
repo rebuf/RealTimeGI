@@ -20,11 +20,11 @@ Copyright © 2006-2019 Camilla Löwy
 
 
 #############################################
-# GLFW:
+# GLM:
 OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 
 License:
-GLFW is licensed under The MIT License
+GLM is licensed under The MIT License
 Copyright (c) 2005 - G-Truc Creation
 
 
@@ -38,12 +38,12 @@ stb_image - v2.26 - public domain image loader
 
 
 #############################################
-# cereal:
-cereal is a header-only C++11 serialization library. cereal takes arbitrary data types and reversibly turns them into different representations, such as compact binary encodings, XML, or JSON. cereal was designed to be fast, light-weight, and easy to extend - it has no external dependencies and can be easily bundled with other code or used standalone.
+# json library:
+header only library for reading json files. https://github.com/nlohmann/json
 
 License:
-cereal is licensed under the BSD license.
-Copyright (c) 2014, Randolph Voorhies, Shane Grant
+json is licensed under MIT license.
+Copyright (c) 2013-2021 Niels Lohmann
 
 
 

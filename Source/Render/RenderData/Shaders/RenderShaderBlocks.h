@@ -128,6 +128,7 @@ namespace GUniform
 		glm::vec4 start;
 		glm::vec4 extent;
 		glm::vec4 count;
+		glm::vec4 Atten;
 	};
 
 }

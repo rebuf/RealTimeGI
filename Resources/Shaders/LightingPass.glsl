@@ -93,6 +93,7 @@ layout(push_constant) uniform Constants
 	vec4 Start;
 	vec4 Extent;
 	vec4 Count;
+	vec4 Atten;
 } inConstant;
 
 
@@ -132,10 +133,9 @@ vec3 SampleIrradianceVolume(in ivec3 GridCoord, in vec3 DiffCoord, in SurfaceDat
 		// Apply Interpolation factors.
 		vec3 ProbeAlpha = mix(1.0 - Alpha, Alpha, abs(ProbeOffset[iP]));
 		IrSample.a *= ProbeAlpha.x * ProbeAlpha.y * ProbeAlpha.z;
-		IrSample.a = max(IrSample.a, 0.00001);
 
 		IrValue += IrSample.rgb * IrSample.a;
-		IrAlpha += IrSample.a;
+		IrAlpha += max(IrSample.a, 0.00001);
 	}
 
 	return IrValue / IrAlpha;
@@ -146,8 +146,8 @@ vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrV
 	in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
 {
 	// Clip & Attinuate...
-	vec3 Atten = vec3(0.0);
-	vec3 AttenOffset = IrVolume.Extent * Atten;
+	vec3 Atten = inConstant.Atten.xyz;
+	vec3 AttenOffset = (IrVolume.Extent * Atten) * 0.5;
 	
 	vec3 LocalP = Surface.P - (IrVolume.Start - AttenOffset);
 	LocalP = LocalP / (IrVolume.Extent + AttenOffset * 2.0);
@@ -167,7 +167,7 @@ vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrV
 	// Smooth Attenuation factor used for blending between volumes.
 	vec3 IrSmooth = vec3(1.0);
 	IrSmooth = smoothstep(0.0, 1.0, LocalP);
-
+	float IrSmoothValue = IrSmooth.x * IrSmooth.y * IrSmooth.z;
 
 	// Lighting Surface using Irradiance Volume...
 	ivec3 GridCoord = GetGridCoord(Surface.P, IrVolume);
@@ -175,12 +175,15 @@ vec4 ComputeIrradianceVolume(in SurfaceData Surface, in IrradianceVolumeData IrV
 	vec3 DiffCoord = sign(Surface.P - GridPos);
 
 	vec3 IrValue = SampleIrradianceVolume(GridCoord, DiffCoord, Surface, IrVolume, Irradiance, Radiance);
-	vec3 Kd = IrValue.rgb * Surface.Albedo;
+	IrValue = pow(IrValue * 1.2, vec3(0.84)) * 3.6;
+
+	vec3 Kd = IrValue * Surface.Albedo;
 
 	if ((inCommon.Mode & COMMON_MODE_REF_CAPTURE) != 0)
 		return vec4(0.0);
 
-	return vec4(IrValue.rgb, 1.0);
+	//return vec4(IrValue.rgb, IrSmoothValue);
+	return vec4(Kd, IrSmoothValue);
 }
 
 

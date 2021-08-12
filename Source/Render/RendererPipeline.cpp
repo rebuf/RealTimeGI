@@ -723,7 +723,7 @@ void RendererPipeline::SetupTargets()
 		mLDRTarget[i].view->Create(mDevice, mLDRTarget[i].image.get());
 
 		mLDRTarget[i].sampler = UniquePtr<VKISampler>(new VKISampler());
-		mLDRTarget[i].sampler->SetFilter(VK_FILTER_NEAREST, VK_FILTER_NEAREST);
+		mLDRTarget[i].sampler->SetFilter(VK_FILTER_LINEAR, VK_FILTER_LINEAR);
 		mLDRTarget[i].sampler->SetAddressMode(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 		mLDRTarget[i].sampler->CreateSampler(mDevice);
 	}

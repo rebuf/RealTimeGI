@@ -34,7 +34,9 @@
     <ClInclude Include="Source\Core\UI\ImGUI\imstb_truetype.h" />
     <ClInclude Include="Source\Importers\GLTFImporter.h" />
     <ClInclude Include="Source\Importers\OBJImporter.h" />
+    <ClInclude Include="Source\Importers\RTGIImporter.h" />
     <ClInclude Include="Source\Render\RenderData\Primitives\IRenderPrimitives.h" />
+    <ClInclude Include="Source\Render\RenderData\Primitives\RenderBox.h" />
     <ClInclude Include="Source\Render\RenderData\Primitives\RenderMesh.h" />
     <ClInclude Include="Source\Render\RenderData\Primitives\RenderSphere.h" />
     <ClInclude Include="Source\Render\RenderData\RenderImage.h" />
@@ -90,7 +92,9 @@
     <ClCompile Include="Source\Core\UI\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Source\Importers\GLTFImporter.cpp" />
     <ClCompile Include="Source\Importers\OBJImporter.cpp" />
+    <ClCompile Include="Source\Importers\RTGIImporter.cpp" />
     <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Render\RenderData\Primitives\RenderBox.cpp" />
     <ClCompile Include="Source\Render\RenderData\Primitives\RenderMesh.cpp" />
     <ClCompile Include="Source\Render\RenderData\Primitives\RenderSphere.cpp" />
     <ClCompile Include="Source\Render\RenderData\RenderImage.cpp" />
@@ -196,7 +200,7 @@
       <PreprocessorDefinitions>BUILD_WIN=1;GLFW_INCLUDE_VULKAN;PROJ_PATH=R"($(ProjectDir))";_DEBUG;_CONSOLE;BUILD_DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\tinyobjloader\Include;$(ProjectDir)\ThirdParty\tinygltfloader;$(ProjectDir)\ThirdParty\stb\Include;$(ProjectDir)\ThirdParty\glm\Include;$(ProjectDir)\ThirdParty\GLFW\Include;$(ProjectDir)\Source;C:\VulkanSDK\1.2.162.1\Include;$(ProjectDir)\ThirdParty\cereal\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\tinyobjloader\Include;$(ProjectDir)\ThirdParty\tinygltfloader;$(ProjectDir)\ThirdParty\stb\Include;$(ProjectDir)\ThirdParty\glm\Include;$(ProjectDir)\ThirdParty\GLFW\Include;$(ProjectDir)\Source;C:\VulkanSDK\1.2.162.1\Include;$(ProjectDir)\ThirdParty\json\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -222,7 +226,7 @@
       <PreprocessorDefinitions>BUILD_WIN=1;GLFW_INCLUDE_VULKAN;PROJ_PATH=R"($(ProjectDir))";NDEBUG;_CONSOLE;BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\tinyobjloader\Include;$(ProjectDir)\ThirdParty\tinygltfloader;$(ProjectDir)\ThirdParty\stb\Include;$(ProjectDir)\ThirdParty\glm\Include;$(ProjectDir)\ThirdParty\GLFW\Include;$(ProjectDir)\Source;C:\VulkanSDK\1.2.162.1\Include;$(ProjectDir)\ThirdParty\cereal\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\tinyobjloader\Include;$(ProjectDir)\ThirdParty\tinygltfloader;$(ProjectDir)\ThirdParty\stb\Include;$(ProjectDir)\ThirdParty\glm\Include;$(ProjectDir)\ThirdParty\GLFW\Include;$(ProjectDir)\Source;C:\VulkanSDK\1.2.162.1\Include;$(ProjectDir)\ThirdParty\json\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -196,6 +196,7 @@ void RenderLightProbe::Destroy()
 
 	mLightingSet->Destroy();
 	mVisualizeSet->Destroy();
+	mIrradianceFilterSet->Destroy();
 }
 
 
@@ -212,6 +213,7 @@ RenderIrradianceVolume::RenderIrradianceVolume()
 	: mStart(0.0f)
 	, mExtent(0.0f)
 	, mCount(0)
+	, mAtten(0.0f)
 {
 
 }

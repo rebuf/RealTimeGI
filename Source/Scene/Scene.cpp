@@ -217,20 +217,20 @@ void Scene::ResetView()
 	glm::vec3 center = bounds.Center();
 	glm::vec3 offset = bounds.Extent();
 
-	mCamera.SetViewTarget(center - glm::vec3(0.0f, 0.0f, 100.0f));
-	mCamera.SetViewPos(center + glm::vec3(-550.0f, -50.0f, 70.0f));
+	mCamera.SetViewTarget(center + glm::vec3(-1.0f, 0.0f, 0.0f));
+	mCamera.SetViewPos(center);
 	mCamera.RecomputeUp();
 }
 
 
 Box Scene::ComputeBounds()
 {
-	Box bounds;
+	mBounds.Reset();
 
 	for (size_t i = 0; i < mSceneNodes.size(); ++i)
-		bounds.Add(mSceneNodes[i].node->GetBounds());
+		mBounds.Add(mSceneNodes[i].node->GetBounds());
 
-	return bounds;
+	return mBounds;
 }
 
 

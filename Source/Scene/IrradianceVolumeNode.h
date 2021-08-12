@@ -70,6 +70,10 @@ public:
 	// Set light probe dirty to get updated.
 	void SetDirty();
 
+	// Set/Get Volume Attenuation.
+	inline void SetAtten(const glm::vec3& atten) { mAtten = atten; }
+	inline glm::vec3 GetAtten() const { return mAtten; }
+
 protected:
 	// Called when the node transform changes.
 	virtual void OnTransform() override;
@@ -86,6 +90,9 @@ private:
 	
 	// Volume Count.
 	glm::ivec3 mCount;
+
+	// Volume Attenuation.
+	glm::vec3 mAtten;
 };
 
 

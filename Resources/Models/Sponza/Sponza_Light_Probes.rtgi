@@ -1,0 +1,650 @@
+[
+    {
+        "POSITION": [
+            600.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            500.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            400.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            300.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            200.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            100.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            0.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -200.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -300.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -400.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -500.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -600.0,
+            0.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            600.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            500.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            400.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            300.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            200.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            100.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            0.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -200.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -300.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -400.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -500.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -600.0,
+            0.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            600.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            500.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            400.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            300.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            200.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            100.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            0.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -200.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -300.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -400.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -500.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -600.0,
+            -220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            600.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            500.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            400.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            300.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            200.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            100.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            0.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -200.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -300.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -400.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -500.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -600.0,
+            220.0,
+            100.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            600.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            500.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            400.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            300.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            200.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            100.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            0.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -200.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -300.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -400.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -500.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -600.0,
+            220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            600.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            500.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            400.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            300.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            200.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            100.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            0.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -200.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -300.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -400.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -500.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    },
+    {
+        "POSITION": [
+            -600.0,
+            -220.0,
+            280.0
+        ],
+        "RADIUS": 240.0,
+        "TYPE": "LIGHT_PROBE"
+    }
+]

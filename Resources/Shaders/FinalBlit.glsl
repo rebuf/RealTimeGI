@@ -24,11 +24,11 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 
+precision highp float;
 
 #include "Common.glsl"
 
 
-#define SCALE_UV_WITH_TARGET 1
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
 #define FXAA_QUALITY_PRESET 12
@@ -53,7 +53,10 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-	vec2 fxaaQualityRcpFrame = 1.0 / inCommon.TargetSize.xy;
+	vec2 fxaaQualityRcpFrame = 1.0 / textureSize(FinalRender, 0);
+	vec2 fxaaTexCoord = TargetTexCoord;
+
+	fxaaQualityRcpFrame = vec2(0.0);
 
 
 	// This used to be the FXAA_QUALITY__SUBPIX define.
@@ -97,7 +100,7 @@ void main()
 	
 	// FXAA...
 	FragColor = FxaaPixelShader(
-		TargetTexCoord,                        // pos {xy} = center of pixel
+		fxaaTexCoord,                          // pos {xy} = center of pixel
 		vec4(0.0),                             // fxaaConsolePosPos.
 		FinalRender,                           // Input color texture.
 		FinalRender,                           // fxaaConsole360TexExpBiasNegOne

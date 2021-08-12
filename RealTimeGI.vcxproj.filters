@@ -228,6 +228,12 @@
     <ClInclude Include="Source\Render\RenderData\UI\RenderImGUI.h">
       <Filter>Source Files\Render\RenderData\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Render\RenderData\Primitives\RenderBox.h">
+      <Filter>Source Files\Render\RenderData\Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Importers\RTGIImporter.h">
+      <Filter>Source Files\Importers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\Frustum.cpp">
@@ -376,6 +382,12 @@
     </ClCompile>
     <ClCompile Include="Source\Render\RenderData\UI\RenderImGUI.cpp">
       <Filter>Source Files\Render\RenderData\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Render\RenderData\Primitives\RenderBox.cpp">
+      <Filter>Source Files\Render\RenderData\Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Importers\RTGIImporter.cpp">
+      <Filter>Source Files\Importers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

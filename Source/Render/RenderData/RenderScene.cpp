@@ -38,6 +38,7 @@
 #include "Render/RenderData/RenderShadow.h"
 #include "Render/RenderData/Primitives/RenderMesh.h"
 #include "Render/RenderData/Primitives/RenderSphere.h"
+#include "Render/RenderData/Primitives/RenderBox.h"
 #include "Render/RenderData/Shaders/RenderMaterial.h"
 #include "Render/RenderData/Shaders/RenderShader.h"
 #include "Render/RenderData/Shaders/RenderUniform.h"
@@ -110,6 +111,9 @@ void RenderScene::Initialize()
 	mRSphere = UniquePtr<RenderSphere>(new RenderSphere());
 	mRSphere->UpdateData(8);
 
+	mRBox = UniquePtr<RenderBox>(new RenderBox());
+	mRBox->UpdateData();
+
 	CreateSunData();
 
 }
@@ -120,7 +124,7 @@ void RenderScene::CreateSunData()
 	RendererPipeline* rpipeline = Application::Get().GetRenderer()->GetPipeline();
 
 	mSunShadow = UniquePtr<RenderDirShadow>(new RenderDirShadow());
-	mSunShadow->SetSize(glm::ivec2(2048, 2048));
+	mSunShadow->SetSize(glm::ivec2(4096, 4096));
 	mSunShadow->Create();
 
 
@@ -148,6 +152,7 @@ void RenderScene::Destroy()
 	mSunShadow->Destroy();
 	mSunLightingSet->Destroy();
 	mRSphere.reset();
+	mRBox.reset();
 }
 
 
@@ -289,6 +294,10 @@ void RenderScene::AddIrradianceVolume(Node* node)
 
 			AddNewHelper(mRSphere.get(), glm::vec4(pos, 0.0f), glm::vec4(0.1f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 		}
+
+		glm::vec3 scale = rVolume->GetExtent() * 0.5f;
+		glm::vec3 center = rVolume->GetStart() + scale;
+		AddNewHelper(mRBox.get(), glm::vec4(center, 1.0f), glm::vec4(scale, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 	}
 }
 
@@ -302,8 +311,14 @@ void RenderScene::CollectSceneLights(Scene* scene)
 	mEnvironment.sunColorAndPower = glm::vec4(scene->GetGlobal().GetSunColor(),
 		scene->GetGlobal().GetSunPower());
 
+
 	glm::mat4 sunView = Transform::LookAt(-sunDir, glm::vec3(0.0f), abs(sunDir.z) < 0.9 ? Transform::UP : Transform::FORWARD * glm::sign(sunDir.z));
-	glm::mat4 sunProj = Transform::Ortho(1200.0f, -1200.0f, 1200.0f, -1200.0f, -10000.0f, 2000.0f);
+	//glm::mat4 sunProj = Transform::Ortho(1200.0f, -1200.0f, 1200.0f, -1200.0f, -10000.0f, 2000.0f);
+
+	glm::vec3 sceneExtent = scene->GetBounds().Extent() * 1.2f;
+	float sceneLen = glm::length(sceneExtent) * 7.6f;
+	glm::mat4 sunProj = Transform::Ortho(sceneExtent.x, -sceneExtent.x, sceneExtent.y, -sceneExtent.y, -sceneLen, sceneLen * 0.2);
+
 	mSunShadow->SetShadowMatrix(sunProj * sunView);
 
 	// Flag sun shadow as dirty.
@@ -376,7 +391,7 @@ void RenderScene::TraverseScene(Scene* scene)
 
 void RenderScene::UpdateUniforms(uint32_t frame)
 {
-	if (!mDynamicMatData.empty())
+	if (mDynamicMatDataCount > 0)
 	{
 		mMaterialUniform->Update(frame, 0,
 			mDynamicMatDataCount * ALIGN_SIZE(sizeof(MaterialData), 64),

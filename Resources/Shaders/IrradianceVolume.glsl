@@ -94,7 +94,46 @@ float SampleIrOcclusion(vec3 v, float ld, float layer, in samplerCubeArray Radia
 }
 
 
-vec4 SampleIrVolumeLayer(in ivec3 GridCoord, in SurfaceData Surface, 
+
+
+//
+//
+float SampleIrOcclusion(vec3 v, float ld, int layer, in samplerCubeArray Radiance) 
+{ 
+	float bias = 0.005; 
+	
+	float offset = 2.5;
+	float numSamples = 3.0;
+	float M1 = 0.0;
+	float M2 = 0.0;
+	
+	for(float x = -offset; x < offset; x += offset / (numSamples * 0.5)) 
+	{ 
+		for(float y = -offset; y < offset; y += offset / (numSamples * 0.5))
+		{
+			for(float z = -offset; z < offset; z += offset / (numSamples * 0.5)) 
+			{
+				float s_depth = texture(Radiance, vec4(v + vec3(x, y, z), layer)).a; 
+
+				M1 += s_depth;
+				M2 += s_depth * s_depth;
+			} 
+		} 
+	}
+
+	M1 /= 27.0;
+	M2 /= 27.0;
+
+
+	float Ver = M2 - M1 * M1;
+	ld -= bias;
+	float g = ld - M1;
+
+	return  g > 0.0 ? (Ver / (Ver + g * g)) : 1.0;
+}
+
+
+vec4 SampleIrVolumeLayer(ivec3 GridCoord, in SurfaceData Surface, 
 	in IrradianceVolumeData IrVolume, in samplerCubeArray Irradiance, in samplerCubeArray Radiance)
 {
 	GridCoord = clamp(GridCoord, ivec3(0), IrVolume.Count - 1);
@@ -106,11 +145,12 @@ vec4 SampleIrVolumeLayer(in ivec3 GridCoord, in SurfaceData Surface,
 	
 	vec3 L = Surface.P - Probe0Pos;
 	float Dist = length(L);
-	//float Occlusion = SampleIrOcclusion(V, Dist * 0.001, Probe0Index, Radiance);
+	//float Occlusion = SampleIrOcclusion(L, Dist * 0.001, Probe0Index, Radiance);
 	float Occlusion = 1.0;
 	
 	L /= Dist;
-	float NDotL = max(dot(-L, Surface.N), 0.0);
+	float NDotL = clamp(dot(-L, Surface.N), 0.0, 1.0);
+	Occlusion *= NDotL;
 
 	return vec4(Irradiance0.rgb, Occlusion);
 }

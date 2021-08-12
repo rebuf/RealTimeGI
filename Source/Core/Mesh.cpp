@@ -125,3 +125,119 @@ Mesh* Mesh::MakeSphere(uint32_t seg, float radius)
 
 	return mesh;
 }
+
+
+
+Mesh* Mesh::MakeBox()
+{
+
+	//    v6----- v5
+	//   /|      /|
+	//  v1------v0|
+	//  | |     | |
+	//  | |v7---|-|v4
+	//  |/      |/
+	//  v2------v3
+	Mesh* mesh = new Mesh();
+	mesh->GetVertices().resize(24);
+
+	mesh->GetVertices()[0].position = glm::vec3(1.0f, 1.0f, 1.0f);
+	mesh->GetVertices()[0].normal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	mesh->GetVertices()[1].position = glm::vec3(-1.0f, 1.0f, 1.0f);
+	mesh->GetVertices()[1].normal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	mesh->GetVertices()[2].position = glm::vec3(-1.0f, -1.0f, 1.0f);
+	mesh->GetVertices()[2].normal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	mesh->GetVertices()[3].position = glm::vec3(1.0f, -1.0f, 1.0f);
+	mesh->GetVertices()[3].normal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	mesh->GetVertices()[4].position = glm::vec3(1.0f, 1.0f, 1.0f);
+	mesh->GetVertices()[4].normal = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[5].position = glm::vec3(1.0f, -1.0f, 1.0f);
+	mesh->GetVertices()[5].normal = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[6].position = glm::vec3(1.0f, -1.0f, -1.0f);
+	mesh->GetVertices()[6].normal = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[7].position = glm::vec3(1.0f, 1.0f, -1.0f);
+	mesh->GetVertices()[7].normal = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[8].position = glm::vec3(1.0f, 1.0f, 1.0f);
+	mesh->GetVertices()[8].normal = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	mesh->GetVertices()[9].position = glm::vec3(1.0f, 1.0f, -1.0f);
+	mesh->GetVertices()[9].normal = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	mesh->GetVertices()[10].position = glm::vec3(-1.0f, 1.0f, -1.0f);
+	mesh->GetVertices()[10].normal = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	mesh->GetVertices()[11].position = glm::vec3(-1.0f, 1.0f, 1.0f);
+	mesh->GetVertices()[11].normal = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	mesh->GetVertices()[12].position = glm::vec3(-1.0f, 1.0f, 1.0f);
+	mesh->GetVertices()[12].normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[13].position = glm::vec3(-1.0f, 1.0f, -1.0f);
+	mesh->GetVertices()[13].normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[14].position = glm::vec3(-1.0f, -1.0f, -1.0f);
+	mesh->GetVertices()[14].normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[15].position = glm::vec3(-1.0f, -1.0f, 1.0f);
+	mesh->GetVertices()[15].normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+
+	mesh->GetVertices()[16].position = glm::vec3(-1.0f, -1.0f, -1.0f);
+	mesh->GetVertices()[16].normal = glm::vec3(0.0f, -1.0f, 0.0f);
+
+	mesh->GetVertices()[17].position = glm::vec3(1.0f, -1.0f, -1.0f);
+	mesh->GetVertices()[17].normal = glm::vec3(0.0f, -1.0f, 0.0f);
+
+	mesh->GetVertices()[18].position = glm::vec3(1.0f, -1.0f, 1.0f);
+	mesh->GetVertices()[18].normal = glm::vec3(0.0f, -1.0f, 0.0f);
+
+	mesh->GetVertices()[19].position = glm::vec3(-1.0f, -1.0f, 1.0f);
+	mesh->GetVertices()[19].normal = glm::vec3(0.0f, -1.0f, 0.0f);
+
+	mesh->GetVertices()[20].position = glm::vec3(1.0f, -1.0f, -1.0f);
+	mesh->GetVertices()[20].normal = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	mesh->GetVertices()[21].position = glm::vec3(-1.0f, -1.0f, -1.0f);
+	mesh->GetVertices()[21].normal = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	mesh->GetVertices()[22].position = glm::vec3(-1.0f, 1.0f, -1.0f);
+	mesh->GetVertices()[22].normal = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	mesh->GetVertices()[23].position = glm::vec3(1.0f, 1.0f, -1.0f);
+	mesh->GetVertices()[23].normal = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	for (int i = 0; i < 6; i++)
+	{
+		mesh->GetVertices()[i * 4 + 0].texCoord = glm::vec2(0.0f, 0.0f);
+		mesh->GetVertices()[i * 4 + 1].texCoord = glm::vec2(1.0f, 0.0f);
+		mesh->GetVertices()[i * 4 + 2].texCoord = glm::vec2(1.0f, 1.0f);
+		mesh->GetVertices()[i * 4 + 3].texCoord = glm::vec2(0.0f, 1.0f);
+	}
+
+	mesh->GetIndices() = {
+		0,1,2,
+		0,2,3,
+		4,5,6,
+		4,6,7,
+		8,9,10,
+		8,10,11,
+		12,13,14,
+		12,14,15,
+		16,17,18,
+		16,18,19,
+		20,21,22,
+		20,22,23
+	};
+
+
+	mesh->mBounds = Box(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+	return mesh;
+}

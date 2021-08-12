@@ -27,6 +27,7 @@
 #include "AppUser.h"
 #include "Render/Renderer.h"
 #include "Importers/GLTFImporter.h"
+#include "Importers/RTGIImporter.h"
 
 #include "Scene/Scene.h"
 #include "Scene/LightProbeNode.h"
@@ -89,13 +90,13 @@ void Application::Initialize()
 	// ...
 	mMainScene = Ptr<Scene>( new Scene() );
 	mMainScene->GetCamera().SetAspect(mAppWnd->GetFrameBufferAspect());
+	mMainScene->ComputeBounds();
 
 	GLTFImporter::Import(mMainScene.get(), RESOURCES_DIRECTORY "Models/Sponza/Sponza.gltf");
 	mMainScene->ResetView(); // Reset view.
 	mMainScene->GetGlobal().SetSunColor( glm::vec3(1.0f, 0.9f, 0.85f) );
 	mMainScene->GetGlobal().SetSunPower(4.0f);
 	mMainScene->GetGlobal().SetSunDir( glm::normalize(glm::vec3(-1.0f, -1.0f, -3.0f)) );
-
 
 	mMainScene->GetGlobal().isLightProbeEnabled = true;
 	mMainScene->GetGlobal().isLightProbeHelpers = true;
@@ -126,6 +127,7 @@ void Application::Initialize()
 		glm::vec4(-500.0f, 0.0f, h0, r0),
 		glm::vec4(-600.0f, 0.0f, h0, r0),
 
+#if 1
 		// Top - Middle
 		glm::vec4( 600.0f, 0.0f, h1, r0),
 		glm::vec4( 500.0f, 0.0f, h1, r0),
@@ -197,6 +199,7 @@ void Application::Initialize()
 		glm::vec4(-400.0f,-220.0f, h1, r0),
 		glm::vec4(-500.0f,-220.0f, h1, r0),
 		glm::vec4(-600.0f,-220.0f, h1, r0)
+#endif
 	};
 
 
@@ -211,8 +214,11 @@ void Application::Initialize()
 #endif
 
 
+
 	// ..............................................................
 	// ..............................................................
+
+
 #if 0
 
 	Box sceneBounds = mMainScene->ComputeBounds();
@@ -246,15 +252,15 @@ void Application::Initialize()
 	// ..............................................................
 
 
-#if 1
+#if 0
 	Box sceneBounds = mMainScene->ComputeBounds();
 	glm::vec3 vSize = glm::vec3(1400.0, 250.0, 220.0f);
 	glm::vec3 vStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
-	glm::ivec3 vCount(18, 3, 3);
+	glm::ivec3 vCount(18, 4, 4);
 
 
 
-#define MULTI_VOLUME 0
+#define MULTI_VOLUME 1
 
 	// Bottom
 	{
@@ -262,19 +268,22 @@ void Application::Initialize()
 		// 0 ---------
 		{
 			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
-			irVolume->SetVolume(vStart + glm::vec3(0.0f, 0.0f, 0.0f), vSize, vCount);
+			irVolume->SetVolume(vStart, vSize, vCount);
+			irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.2f));
 			irVolume->UpdateIrradianceVolumeNode();
 			mMainScene->AddNode(irVolume);
 		}
 
 #if MULTI_VOLUME
-		glm::vec3 vGSize = vSize;
-		vGSize.y *= 0.9f;
-
 		// 1 ---------
 		{
+			glm::vec3 gSize = glm::vec3(1400.0, 190.0, 210.0f);
+			glm::vec3 gStart = sceneBounds.Center() - glm::vec3(gSize.x * 0.5, gSize.y * 0.5, 340.0f);
+			gStart += glm::vec3(0.0f, vSize.y - 35, 0.0f);
+
 			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
-			irVolume->SetVolume(vStart + glm::vec3(0.0f, vGSize.y, -15.0f), vSize, vCount);
+			irVolume->SetVolume(gStart, gSize, vCount);
+			irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.2f));
 			irVolume->UpdateIrradianceVolumeNode();
 			mMainScene->AddNode(irVolume);
 		}
@@ -282,8 +291,13 @@ void Application::Initialize()
 
 		// 2 ---------
 		{
+			glm::vec3 gSize = glm::vec3(1400.0, 190.0, 210.0f);
+			glm::vec3 gStart = sceneBounds.Center() - glm::vec3(gSize.x * 0.5, gSize.y * 0.5, 340.0f);
+			gStart += glm::vec3(0.0f, -vSize.y + 35, 0.0f);
+
 			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
-			irVolume->SetVolume(vStart + glm::vec3(0.0f, -vGSize.y, -15.0f), vSize, vCount);
+			irVolume->SetVolume(gStart, gSize, vCount);
+			irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.2f));
 			irVolume->UpdateIrradianceVolumeNode();
 			mMainScene->AddNode(irVolume);
 		}
@@ -292,26 +306,33 @@ void Application::Initialize()
 	}
 	
 
-#if MULTI_VOLUME
+#if 1
 	// Top
 	{
 
 		// 0 ---------
 		{
+			glm::vec3 gSize = glm::vec3(1400.0, 250.0, 220.0f);
+			glm::vec3 gStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
+			gStart += glm::vec3(0.0f, 0.0f, vSize.z);
+
 			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
-			irVolume->SetVolume(vStart + glm::vec3(0.0f, 0.0f, vSize.z), vSize, vCount);
+			irVolume->SetVolume(gStart, gSize, vCount);
+			irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.4f));
 			irVolume->UpdateIrradianceVolumeNode();
 			mMainScene->AddNode(irVolume);
 		}
 
 
-		glm::vec3 vGSize = vSize;
-		vGSize.y *= 0.9f;
-
 		// 1 ---------
 		{
+			glm::vec3 gSize = glm::vec3(1400.0, 190.0, 240.0f);
+			glm::vec3 gStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
+			gStart += glm::vec3(0.0f, vSize.y, vSize.z - 10.0);
+
 			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
-			irVolume->SetVolume(vStart + glm::vec3(0.0f, vGSize.y, -15.0f + vSize.z), vSize, vCount);
+			irVolume->SetVolume(gStart, gSize, vCount);
+			irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.0f));
 			irVolume->UpdateIrradianceVolumeNode();
 			mMainScene->AddNode(irVolume);
 		}
@@ -319,36 +340,61 @@ void Application::Initialize()
 
 		// 2 ---------
 		{
+			glm::vec3 gSize = glm::vec3(1400.0, 190.0, 240.0f);
+			glm::vec3 gStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
+			gStart += glm::vec3(0.0f, -vSize.y + 62.0f, vSize.z - 10.0f);
+
 			Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
-			irVolume->SetVolume(vStart + glm::vec3(0.0f, -vGSize.y, -15.0f + vSize.z), vSize, vCount);
+			irVolume->SetVolume(gStart, gSize, vCount);
+			irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.0f));
 			irVolume->UpdateIrradianceVolumeNode();
 			mMainScene->AddNode(irVolume);
 		}
+	}
+
+
+
+	// Top - Top
+	{
+		glm::vec3 gSize = glm::vec3(1400.0, 250.0, 220.0f);
+		glm::vec3 gStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
+		gStart += glm::vec3(0.0f, 0.0f, vSize.z * 2.0f);
+		glm::ivec3 gCount(8, 2, 2);
+
+		Ptr<IrradianceVolumeNode> irVolume(new IrradianceVolumeNode());
+		irVolume->SetVolume(gStart, gSize, gCount);
+		irVolume->SetAtten(glm::vec3(0.0f, 0.2f, 0.4f));
+		irVolume->UpdateIrradianceVolumeNode();
+		mMainScene->AddNode(irVolume);
 	}
 #endif
 
 
 #endif
 
+	//RTGIImporter::SaveLightComponents(mMainScene.get(), "C:/Temp/TESTING.rtgi");
 
 	// ..............................................................
 	// ..............................................................
-
-
-	mAppUser->MatchCamera(mMainScene.get());
 
 
 }
 
 
-void Application::ReplaceSceen(Ptr<Scene> scene)
+void Application::ReplaceScene(Ptr<Scene> scene)
 {
 	if (mMainScene)
 	{
+		mRenderer->WaitForIdle();
 		mMainScene->Destroy();
+		mMainScene.reset();
 	}
 
+	if (!scene)
+		return;
+
 	mMainScene = scene;
+	mMainScene->ComputeBounds();
 	mMainScene->Start();
 }
 

@@ -139,22 +139,22 @@ float ComputeDirShadow(vec3 P, in sampler2DShadow ShadowMap, in mat4 LightTransf
 	vec4 LP = LightTransform * vec4(P, 1.0);
 	LP.xy = LP.xy * 0.5 + 0.5;
 	
-	float Bias = 0.0025;
+	float Bias = 0.0015;
 	float ShadowValue = 0.0;
 	
 	// PCF...
 	vec2 texelSize = 1.0 / textureSize(ShadowMap, 0);
 	
-	for(float x = -1.5; x < 1.49; x+=1.0)
+	for(float x = -1.5; x < 2.49; x+=1.0)
 	{
-		for(float y = -1.5; y < 1.49; y+=1.0)
+		for(float y = -1.5; y < 2.49; y+=1.0)
 		{
 				float S_Depth = texture(ShadowMap, vec3(LP.xy + vec2(x * texelSize.x, y * texelSize.y), (LP.z - Bias))).r;
 				ShadowValue += S_Depth;
 		}    
 	}
 	
-	ShadowValue /= 9.0;
+	ShadowValue /= 16.0;
 
 	return ShadowValue;
 }

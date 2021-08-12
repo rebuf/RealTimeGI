@@ -52,7 +52,6 @@ static const std::array<std::string, 1> GLTF_EXT_LIST = { ".gltf" };
 
 std::vector<std::string> gImagesUri;
 std::map< std::string, Ptr<Image2D> > gImagesMap;
-Ptr<Image2D> gDefaultWhite;
 
 
 
@@ -312,8 +311,8 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 
 	for (uint32_t i = 0; i < (uint32_t)meshes.size(); ++i)
 	{
-		if (materails[i]->GetColorTexture() == gDefaultWhite)
-			continue;
+		//if (materails[i]->GetColorTexture() == nullptr)
+		//	continue;
 
 		meshes[i]->UpdateRenderMesh(); // Create & Update RenderMesh.
 		materails[i]->UpdateRenderMaterial();
@@ -326,8 +325,6 @@ bool GLTFImporter::Import(Scene* scene, const std::string& file)
 
 	scene->AddNode(node);
 
-
-	gDefaultWhite.reset();
 	gImagesUri.clear();
 	gImagesMap.clear();
 	return true;

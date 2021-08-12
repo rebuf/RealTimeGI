@@ -54,7 +54,6 @@ layout(location = 0) out vec4 FragColor;
 vec3 Tonemap(vec3 Color) 
 {
 
-// Approxiate Filmic
 #define UNCHARTED_TONE_OP(x) ( ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F )
 
 	float A = 0.15;
