@@ -297,7 +297,7 @@ void RenderScene::AddIrradianceVolume(Node* node)
 
 		glm::vec3 scale = rVolume->GetExtent() * 0.5f;
 		glm::vec3 center = rVolume->GetStart() + scale;
-		AddNewHelper(mRBox.get(), glm::vec4(center, 1.0f), glm::vec4(scale, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		//AddNewHelper(mRBox.get(), glm::vec4(center, 1.0f), glm::vec4(scale, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 	}
 }
 

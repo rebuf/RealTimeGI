@@ -252,7 +252,7 @@ void Application::Initialize()
 	// ..............................................................
 
 
-#if 0
+#if 1
 	Box sceneBounds = mMainScene->ComputeBounds();
 	glm::vec3 vSize = glm::vec3(1400.0, 250.0, 220.0f);
 	glm::vec3 vStart = sceneBounds.Center() - glm::vec3(vSize.x * 0.5, vSize.y * 0.5, 340.0f);
@@ -306,7 +306,7 @@ void Application::Initialize()
 	}
 	
 
-#if 1
+#if MULTI_VOLUME
 	// Top
 	{
 
@@ -372,11 +372,6 @@ void Application::Initialize()
 
 #endif
 
-	//RTGIImporter::SaveLightComponents(mMainScene.get(), "C:/Temp/TESTING.rtgi");
-
-	// ..............................................................
-	// ..............................................................
-
 
 }
 
@@ -430,9 +425,6 @@ int32_t Application::Run()
 		// Render...
 		Render();
 
-
-		GISystem::Sleep(24);
-		//LOGW("FPS: %f", 1.0F / (float)mDeltaTime);
 	}
 
 
