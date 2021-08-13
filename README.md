@@ -15,7 +15,12 @@ Click Build to recompte the lighting.
 To load different scenes drag & drop .gltf files into the window. (.rtgi json files are used to load irradiance volumes see the example in Sponza directory).
 To edit/insert irradaince volumes create/edit .rtgi files with the same name as the .gltf file. reload the scene by drag & drop the new volumes will be created.
 
+Controls:
+1 key -> enable/disable global illumniation.
+2 key -> hide/show proxies.
 
-# Navigation:
+Navigation:
 you can move around the scene using w, a, s, d keys.
 holding right mouse click and move the mouse to look around.
+
+
