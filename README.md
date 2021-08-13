@@ -6,6 +6,8 @@ Real-Time Global Illumination - University of Leeds MSc Project.
 Visual Studio 2019
 Vulkan SDK 1.2.162.1
 
+Python script is used to compile shaders. 
+
 Open the solution and build, if the Vulkan SDK not found change the project settings.
 
 # How to use:
