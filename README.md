@@ -1,6 +1,8 @@
 # RealTimeGI
 Real-Time Global Illumination - University of Leeds MSc Project.
 
+Demo:
+https://youtu.be/b3ZG4T-qT6g
 
 # Build:
 Visual Studio 2019
